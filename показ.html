@@ -141,6 +141,32 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
 .отбой .бейдж[data-ключ="ulytau"]{fill:var(--зелёный);animation:none;
   filter:drop-shadow(0 0 6px rgba(62,213,152,.8));transition:fill 2s ease}
 
+/* чат-запрос к ИИ на экране ДАЦ */
+#чат{position:absolute;left:50%;top:calc(6.2vh + clamp(30px,4.8vh,54px) + 2.2vh);
+  transform:translateX(-50%);display:flex;flex-direction:column;gap:.9vmin;
+  align-items:center;opacity:0;transition:opacity .6s ease;z-index:4}
+.чат_виден #чат{opacity:1}
+#чат_вопрос{background:var(--стекло);border:1px solid rgba(79,227,255,.4);
+  border-radius:10px;padding:1.2vmin 2vmin;font-size:clamp(14px,2.3vmin,27px);
+  letter-spacing:.02em;box-shadow:0 0 24px rgba(79,227,255,.12)}
+.чат_метка{color:var(--приглуш);margin-right:1.2vmin;font-size:.78em;
+  text-transform:uppercase;letter-spacing:.14em}
+#чат_курсор{color:var(--циан);animation:мигание 1s steps(1) infinite}
+@keyframes мигание{50%{opacity:0}}
+#чат_статус{font-size:clamp(12px,1.9vmin,22px);color:var(--приглуш);
+  opacity:0;transition:opacity .5s ease}
+#чат_статус b{color:var(--циан);letter-spacing:.08em}
+.чат_думает_идёт #чат_статус{opacity:1}
+#чат_думает i{font-style:normal;animation:точка 1.2s infinite}
+#чат_думает i:nth-child(2){animation-delay:.2s}
+#чат_думает i:nth-child(3){animation-delay:.4s}
+@keyframes точка{0%,60%,100%{opacity:.2}30%{opacity:1}}
+#чат_ответ{display:none;color:var(--текст)}
+.чат_ответил #чат_думает{display:none}
+.чат_ответил #чат_ответ{display:inline}
+.чат_ответил #чат_курсор{display:none}
+body.снимок #чат{opacity:1}
+
 /* карточка проблемного региона */
 #карточка{position:absolute;left:60%;top:27%;width:clamp(260px,23vw,450px);
   padding:2.2vmin 2.5vmin;
@@ -231,11 +257,11 @@ body.пусто #знак_аян, body.пусто #подпись, body.пуст
     <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.55)"></div>
     <div class="виньетка"></div>
     <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.2vmin">
-      <div id="зачем_заголовок">Что это даёт государству</div>
+      <div id="зачем_заголовок">Три вопроса государства</div>
       <div class="тезисы">
-        <div class="тезис">Запасы каждой области — в режиме онлайн</div>
-        <div class="тезис">Топливо в пути — на карте, вагон за вагоном</div>
-        <div class="тезис">Дефицит предупреждается до того, как случился</div>
+        <div class="тезис">Сколько топлива в каждой области — сегодня?</div>
+        <div class="тезис">Где топливо, которое уже в пути?</div>
+        <div class="тезис">Где дефицит случится завтра?</div>
       </div>
     </div>
   </section>
@@ -263,6 +289,12 @@ body.пусто #знак_аян, body.пусто #подпись, body.пуст
   <!-- ТАКТ 3: экран ДАЦ, области, проблемный регион -->
   <section class="такт такт_карта" id="карта_области">
     <div id="рамка_дац"><div class="шапка"><b>ДАЦ</b> Диспетчерско-аналитический центр · мониторинг запасов нефтепродуктов</div></div>
+    <!-- жест живой системы: вопрос в чат → ИИ думает → карта отвечает.
+         Тот же жест Председатель повторит в настоящей системе через минуту -->
+    <div id="чат">
+      <div id="чат_вопрос"><span class="чат_метка">Вопрос</span><span id="чат_текст"></span><span id="чат_курсор">▎</span></div>
+      <div id="чат_статус"><b>AIAN</b><span id="чат_думает">&nbsp;думает<i>.</i><i>.</i><i>.</i></span><span id="чат_ответ">&nbsp;— ответ на карте</span></div>
+    </div>
     <div id="карточка">
       <h3>Проблемный регион</h3>
       <p>Остатки ниже порога.<br>Запаса — считанные дни, топливо уже в пути.</p>
@@ -365,19 +397,43 @@ const ТАКТЫ = [
       document.getElementById('карта_центр').classList.remove('мост_прошёл','линии_пошли');
     } },
   { id:'карта_области',
+    // жест живой системы: печатается вопрос → ИИ думает → карта отвечает
     вход(){
       const с = document.getElementById('карта_области');
-      с.classList.remove('отбой');
       const свг = с.querySelector('svg.карта');
-      setTimeout(()=>свг && свг.classList.add('цвета_пошли'), 300);
-      setTimeout(()=>с.classList.add('тревога_идёт'), 2200); // тревога после волны окраски
-      setTimeout(()=>document.getElementById('карточка').classList.add('показана'), 3000);
-      подпись('Система сама находит зоны риска',
-              'запасы каждой области: нефтебазы · в пути · в днях потребления', 3800);
+      const тэ = document.getElementById('чат_текст');
+      const ВОПРОС = 'В каких областях есть риск дефицита топлива?';
+      с.classList.remove('отбой');
+      с.classList.add('чат_виден');
+      this.таймеры = [];
+      const ответ = ()=>{
+        с.classList.add('чат_ответил');
+        свг && свг.classList.add('цвета_пошли');
+        this.таймеры.push(setTimeout(()=>с.classList.add('тревога_идёт'), 1800));
+        this.таймеры.push(setTimeout(()=>document.getElementById('карточка').classList.add('показана'), 2600));
+        подпись('Система сама находит зоны риска',
+                'запасы каждой области: нефтебазы · в пути · в днях потребления', 3400);
+      };
+      if(режимСнимка){ тэ.textContent = ВОПРОС; с.classList.add('чат_думает_идёт'); ответ(); return; }
+      тэ.textContent = '';
+      /* буквы считаются от реального времени, а не от числа тиков: фоновые
+         вкладки троттлят таймеры до 1 Гц, и печать «по тику» зависала */
+      const старт = performance.now();
+      this.печать = setInterval(()=>{
+        const и = Math.min(ВОПРОС.length, Math.floor((performance.now()-старт)/42));
+        тэ.textContent = ВОПРОС.slice(0, и);
+        if(и >= ВОПРОС.length){
+          clearInterval(this.печать);
+          с.classList.add('чат_думает_идёт');
+          this.таймеры.push(setTimeout(ответ, 2200)); // ИИ «думает»
+        }
+      }, 40);
     },
     выход(){
+      clearInterval(this.печать);
+      (this.таймеры||[]).forEach(clearTimeout);
       const с = document.getElementById('карта_области');
-      с.classList.remove('тревога_идёт');
+      с.classList.remove('тревога_идёт','чат_виден','чат_думает_идёт','чат_ответил');
       const свг = с.querySelector('svg.карта');
       свг && свг.classList.remove('цвета_пошли');
       document.getElementById('карточка').classList.remove('показана');
@@ -390,6 +446,8 @@ const ТАКТЫ = [
       с.classList.add('тревога_идёт');
       setTimeout(()=>с.classList.add('поток_идёт'), 1800);     // топливо пошло с запада
       setTimeout(()=>{ с.classList.remove('тревога_идёт'); с.classList.add('отбой'); }, 3600);
+      /* формула «от мониторинга к проактивному управлению» намеренно убрана:
+         она звучит в живой части у Председателя — дубль зачищен */
       подпись('Дефицит предотвращён — до того, как случился',
               'скорректировать поставки · ускорить отгрузку · перераспределить объёмы', 4200);
     },
