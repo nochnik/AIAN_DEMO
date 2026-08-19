@@ -14,6 +14,13 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--текст)}
+/* окно не 16:9 → сцена подгоняется без обрезки, а поля вокруг заполняет
+   размытое продолжение фона: чёрных полос не видно, кадр цел.
+   Вариант «растянуть с обрезкой» отклонён: срезал бы шапку ДАЦ и подписи. */
+body::before{content:'';position:fixed;inset:-4vmax;z-index:0;
+  background:url("медиа/титул.jpg") center/cover;
+  filter:brightness(.32) saturate(.8) blur(26px)}
+#сцена{z-index:1}
 
 /* Сцена фиксированная 1920×1080, масштабируется под окно — как в ЦД:
    вёрстка не зависит от экрана в зале. */
