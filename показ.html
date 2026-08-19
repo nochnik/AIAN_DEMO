@@ -14,18 +14,11 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--текст)}
-/* окно не 16:9 → сцена подгоняется без обрезки, а поля вокруг заполняет
-   размытое продолжение фона: чёрных полос не видно, кадр цел.
-   Вариант «растянуть с обрезкой» отклонён: срезал бы шапку ДАЦ и подписи. */
-body::before{content:'';position:fixed;inset:-4vmax;z-index:0;
-  background:url("медиа/титул.jpg") center/cover;
-  filter:brightness(.32) saturate(.8) blur(26px)}
-#сцена{z-index:1}
-
-/* Сцена фиксированная 1920×1080, масштабируется под окно — как в ЦД:
-   вёрстка не зависит от экрана в зале. */
-#сцена{position:absolute;left:50%;top:50%;width:1920px;height:1080px;
-  transform-origin:center center;background:var(--фон0)}
+/* Вёрстка как в ЦД: никакой масштабируемой сцены — фоны и видео лежат на
+   всё окно (object-fit:cover, края кадра режутся, это нормально), тексты
+   и интерфейс в вьюпорт-единицах. Прежний вариант с фикс-сценой 1920×1080
+   и scale() отклонён: давал чёрные полосы на любом окне не ровно 16:9. */
+#сцена{position:fixed;inset:0;background:var(--фон0)}
 
 .такт{position:absolute;inset:0;opacity:0;pointer-events:none;
   transition:opacity .9s ease}
@@ -41,17 +34,17 @@ body::before{content:'';position:fixed;inset:-4vmax;z-index:0;
   align-items:center;justify-content:center;gap:28px}
 /* Логотип из презентации заказчика: тёмный знак не читается на чёрном,
    поэтому выбеливаем фильтром, а не правим файл. */
-#лого{height:64px;filter:brightness(0) invert(1) drop-shadow(0 0 18px rgba(79,227,255,.25));opacity:.92}
-#имя{font-size:120px;font-weight:700;letter-spacing:.04em;
+#лого{height:clamp(40px,6vmin,68px);filter:brightness(0) invert(1) drop-shadow(0 0 18px rgba(79,227,255,.25));opacity:.92}
+#имя{font-size:clamp(56px,11vmin,128px);font-weight:700;letter-spacing:.04em;
   text-shadow:0 0 60px rgba(79,227,255,.35)}
 #имя b{color:var(--циан);font-weight:700}
-#подзаг{font-size:34px;color:var(--приглуш);letter-spacing:.06em}
+#подзаг{font-size:clamp(17px,3.1vmin,36px);color:var(--приглуш);letter-spacing:.06em}
 
 /* ---------- зачем (тезисы для государства) ---------- */
-#зачем_заголовок{font-size:30px;color:var(--приглуш);letter-spacing:.22em;
+#зачем_заголовок{font-size:clamp(15px,2.7vmin,32px);color:var(--приглуш);letter-spacing:.22em;
   text-transform:uppercase}
-.тезисы{display:flex;flex-direction:column;gap:34px;align-items:flex-start}
-.тезис{font-size:46px;font-weight:600;letter-spacing:.01em;padding-left:34px;
+.тезисы{display:flex;flex-direction:column;gap:3.2vmin;align-items:flex-start}
+.тезис{font-size:clamp(22px,4.2vmin,50px);font-weight:600;letter-spacing:.01em;padding-left:34px;
   border-left:3px solid var(--циан);line-height:1.25;
   text-shadow:0 2px 24px rgba(0,0,0,.9);
   opacity:0;transform:translateY(14px);transition:all .9s ease}
@@ -63,11 +56,11 @@ body.снимок .тезис{transition:none !important}
 
 /* ---------- цепочка (видео) ---------- */
 #видео_цепочка{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-#этапы{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);
-  display:flex;gap:14px;align-items:center}
-.этап{padding:12px 26px;border:1px solid rgba(124,141,166,.35);border-radius:8px;
-  background:var(--стекло);font-size:26px;color:var(--приглуш);letter-spacing:.03em;
-  transition:all .6s ease}
+#этапы{position:absolute;left:50%;bottom:13.5vh;transform:translateX(-50%);
+  display:flex;gap:14px;align-items:center;max-width:96vw}
+.этап{padding:1.1vmin 2.4vmin;border:1px solid rgba(124,141,166,.35);border-radius:8px;
+  background:var(--стекло);font-size:clamp(13px,2.4vmin,28px);color:var(--приглуш);letter-spacing:.03em;
+  transition:all .6s ease;white-space:nowrap}
 .этап.горит{color:var(--текст);border-color:var(--циан);
   box-shadow:0 0 24px rgba(79,227,255,.25);}
 .этап .точка{display:inline-block;width:9px;height:9px;border-radius:50%;
@@ -77,7 +70,9 @@ body.снимок .тезис{transition:none !important}
 
 /* ---------- карта ---------- */
 .такт_карта{background:radial-gradient(ellipse at 50% 42%,#0A1422 0%,var(--фон0) 72%)}
-svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)}
+/* карта держит пропорцию сама (viewBox): ширина от окна, но не выше 74vh */
+svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+  width:min(78vw,134vh);height:auto}
 /* область прозрачная — сквозь неё виден генерированный рельеф, обрезанный
    точным контуром страны: красота из генерации, геометрия из вектора */
 .область{fill:rgba(16,34,52,.38);stroke:rgba(79,227,255,.55);stroke-width:1.1;
@@ -122,7 +117,7 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
 .мост_прошёл #видео_мост{opacity:0;pointer-events:none}
 @keyframes вспышка{from{opacity:0;r:6}to{opacity:1}}
 #знак_аян{position:absolute;left:50%;top:13%;transform:translate(-50%,-50%) scale(.8);
-  opacity:0;transition:all 1s ease;font-size:64px;font-weight:700;letter-spacing:.05em;
+  opacity:0;transition:all 1s ease;font-size:clamp(30px,6vmin,68px);font-weight:700;letter-spacing:.05em;
   text-shadow:0 0 40px rgba(79,227,255,.5)}
 #знак_аян b{color:var(--циан)}
 .такт.активен #знак_аян.показан{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -147,13 +142,14 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
   filter:drop-shadow(0 0 6px rgba(62,213,152,.8));transition:fill 2s ease}
 
 /* карточка проблемного региона */
-#карточка{position:absolute;left:1150px;top:300px;width:430px;padding:26px 30px;
+#карточка{position:absolute;left:60%;top:27%;width:clamp(260px,23vw,450px);
+  padding:2.2vmin 2.5vmin;
   background:var(--стекло);border:1px solid rgba(255,90,79,.55);border-radius:12px;
   opacity:0;transform:translateY(14px);transition:all .8s ease .8s}
 .такт.активен #карточка.показана{opacity:1;transform:none}
-#карточка h3{font-size:27px;color:var(--красный);margin-bottom:12px;font-weight:600}
-#карточка p{font-size:22px;color:var(--текст);line-height:1.45}
-#карточка .мелко{font-size:18px;color:var(--приглуш);margin-top:10px}
+#карточка h3{font-size:clamp(15px,2.4vmin,28px);color:var(--красный);margin-bottom:1vmin;font-weight:600}
+#карточка p{font-size:clamp(12px,2vmin,23px);color:var(--текст);line-height:1.45}
+#карточка .мелко{font-size:clamp(10px,1.6vmin,19px);color:var(--приглуш);margin-top:1vmin}
 
 /* поток поставок */
 .поток{fill:none;stroke:var(--янтарь);stroke-width:3;stroke-linecap:round;
@@ -165,32 +161,32 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
 @keyframes бег{to{stroke-dashoffset:-40}}
 
 /* рамка «экран ДАЦ» */
-#рамка_дац{position:absolute;left:110px;top:70px;right:110px;bottom:120px;
+#рамка_дац{position:absolute;left:5.5vw;top:6.2vh;right:5.5vw;bottom:11vh;
   border:1px solid rgba(79,227,255,.35);border-radius:16px;
   box-shadow:inset 0 0 60px rgba(79,227,255,.06);pointer-events:none}
-#рамка_дац .шапка{position:absolute;left:0;top:0;right:0;height:52px;
+#рамка_дац .шапка{position:absolute;left:0;top:0;right:0;height:clamp(30px,4.8vh,54px);
   border-bottom:1px solid rgba(79,227,255,.25);display:flex;align-items:center;
-  padding:0 24px;font-size:21px;color:var(--приглуш);letter-spacing:.05em}
+  padding:0 24px;font-size:clamp(11px,1.9vmin,22px);color:var(--приглуш);letter-spacing:.05em}
 #рамка_дац .шапка b{color:var(--циан);margin-right:10px;font-weight:600}
 
 /* ---------- подписи тактов ---------- */
-#подпись{position:absolute;left:50%;bottom:56px;transform:translateX(-50%) translateY(12px);
-  max-width:1560px;text-align:center;opacity:0;transition:all .8s ease;pointer-events:none}
+#подпись{position:absolute;left:50%;bottom:4.8vh;transform:translateX(-50%) translateY(12px);
+  max-width:94vw;text-align:center;opacity:0;transition:all .8s ease;pointer-events:none}
 #подпись.видна{opacity:1;transform:translateX(-50%)}
-#подпись .большая{font-size:40px;font-weight:600;letter-spacing:.02em;
+#подпись .большая{font-size:clamp(20px,3.6vmin,42px);font-weight:600;letter-spacing:.02em;
   white-space:nowrap;text-shadow:0 2px 24px rgba(0,0,0,.9)}
-#подпись .малая{font-size:24px;color:var(--приглуш);margin-top:8px}
+#подпись .малая{font-size:clamp(13px,2.2vmin,26px);color:var(--приглуш);margin-top:.8vmin}
 
 /* ---------- финал ---------- */
 #финал .центр{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:44px}
-#эффекты{display:grid;grid-template-columns:repeat(2,540px);gap:22px}
-.эффект{padding:30px 36px;background:var(--стекло);border:1px solid rgba(79,227,255,.3);
-  border-radius:12px;font-size:30px;text-align:center;letter-spacing:.02em}
-#цифра{font-size:76px;font-weight:700;color:var(--циан);
+#эффекты{display:grid;grid-template-columns:repeat(2,min(42vw,540px));gap:2vmin}
+.эффект{padding:2.6vmin 3vmin;background:var(--стекло);border:1px solid rgba(79,227,255,.3);
+  border-radius:12px;font-size:clamp(15px,2.8vmin,32px);text-align:center;letter-spacing:.02em}
+#цифра{font-size:clamp(38px,7vmin,80px);font-weight:700;color:var(--циан);
   text-shadow:0 0 50px rgba(79,227,255,.4)}
-#цифра span{font-size:32px;color:var(--текст);font-weight:400;display:block;margin-top:6px}
-#дорожка{font-size:24px;color:var(--приглуш);letter-spacing:.03em}
+#цифра span{font-size:clamp(15px,2.9vmin,34px);color:var(--текст);font-weight:400;display:block;margin-top:.6vmin}
+#дорожка{font-size:clamp(12px,2.2vmin,26px);color:var(--приглуш);letter-spacing:.03em}
 #дорожка b{color:var(--текст);font-weight:600}
 
 /* режим ?снимок=1: все анимации в конечном состоянии — для покадровой
@@ -234,7 +230,7 @@ body.пусто #знак_аян, body.пусто #подпись, body.пуст
   <section class="такт" id="зачем">
     <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.55)"></div>
     <div class="виньетка"></div>
-    <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:46px">
+    <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.2vmin">
       <div id="зачем_заголовок">Что это даёт государству</div>
       <div class="тезисы">
         <div class="тезис">Запасы каждой области — в режиме онлайн</div>
@@ -281,9 +277,9 @@ body.пусто #знак_аян, body.пусто #подпись, body.пуст
   <section class="такт" id="передача">
     <div id="титул_фон2" style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover"></div>
     <div class="виньетка"></div>
-    <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px">
-      <div style="font-size:88px;font-weight:700;letter-spacing:.04em">KMG.<b style="color:var(--циан)">AIAN</b></div>
-      <div style="font-size:40px;color:var(--приглуш)">Живая демонстрация</div>
+    <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.8vmin">
+      <div style="font-size:clamp(44px,8vmin,94px);font-weight:700;letter-spacing:.04em">KMG.<b style="color:var(--циан)">AIAN</b></div>
+      <div style="font-size:clamp(20px,3.7vmin,44px);color:var(--приглуш)">Живая демонстрация</div>
     </div>
   </section>
 
@@ -310,19 +306,7 @@ body.пусто #знак_аян, body.пусто #подпись, body.пуст
 <script>
 "use strict";
 /* ============ масштаб сцены ============ */
-const сцена = document.getElementById('сцена');
-function подмасштаб(){
-  // visualViewport точнее innerWidth при зуме браузера и на телефонах
-  const ш = (window.visualViewport && visualViewport.width)  || innerWidth;
-  const в = (window.visualViewport && visualViewport.height) || innerHeight;
-  const м = Math.min(ш/1920, в/1080);
-  сцена.style.transform = `translate(-50%,-50%) scale(${м})`;
-}
-addEventListener('resize', подмасштаб);
-addEventListener('orientationchange', подмасштаб);
-window.visualViewport && visualViewport.addEventListener('resize', подмасштаб);
-addEventListener('load', подмасштаб);
-подмасштаб();
+/* масштабирование не нужно: вёрстка вьюпортом, как в ЦД */
 
 /* ============ подписи ============ */
 /* Подпись описывает кадр, к которому лента приходит, — выходит к концу такта
