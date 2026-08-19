@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMG.AIAN — интро</title>
+<style>
+/* Палитра перенесена из ЦД — заказчик просил тот же стиль. */
+:root{
+  --циан:#4FE3FF; --янтарь:#F0AE4A; --красный:#FF5A4F; --зелёный:#3ED598;
+  --фон0:#050810; --фон1:#0C1626;
+  --стекло:rgba(10,18,32,.82); --текст:#D7E2F2; --приглуш:#7C8DA6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--текст)}
+
+/* Сцена фиксированная 1920×1080, масштабируется под окно — как в ЦД:
+   вёрстка не зависит от экрана в зале. */
+#сцена{position:absolute;left:50%;top:50%;width:1920px;height:1080px;
+  transform-origin:center center;background:var(--фон0)}
+
+.такт{position:absolute;inset:0;opacity:0;pointer-events:none;
+  transition:opacity .9s ease}
+.такт.активен{opacity:1;pointer-events:auto}
+
+/* ---------- титул ---------- */
+#титул_фон{position:absolute;inset:0;background:url("медиа/титул.jpg") center/cover;
+  animation:дрейф 40s ease-in-out infinite alternate}
+@keyframes дрейф{from{transform:scale(1.0) translateX(0)}to{transform:scale(1.08) translateX(-24px)}}
+.виньетка{position:absolute;inset:0;background:radial-gradient(ellipse at center,
+  transparent 40%,rgba(0,0,0,.55) 100%)}
+#титул .центр{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:28px}
+/* Логотип из презентации заказчика: тёмный знак не читается на чёрном,
+   поэтому выбеливаем фильтром, а не правим файл. */
+#лого{height:64px;filter:brightness(0) invert(1) drop-shadow(0 0 18px rgba(79,227,255,.25));opacity:.92}
+#имя{font-size:120px;font-weight:700;letter-spacing:.04em;
+  text-shadow:0 0 60px rgba(79,227,255,.35)}
+#имя b{color:var(--циан);font-weight:700}
+#подзаг{font-size:34px;color:var(--приглуш);letter-spacing:.06em}
+
+/* ---------- зачем (тезисы для государства) ---------- */
+#зачем_заголовок{font-size:30px;color:var(--приглуш);letter-spacing:.22em;
+  text-transform:uppercase}
+.тезисы{display:flex;flex-direction:column;gap:34px;align-items:flex-start}
+.тезис{font-size:46px;font-weight:600;letter-spacing:.01em;padding-left:34px;
+  border-left:3px solid var(--циан);line-height:1.25;
+  text-shadow:0 2px 24px rgba(0,0,0,.9);
+  opacity:0;transform:translateY(14px);transition:all .9s ease}
+.такт.активен .тезис{opacity:1;transform:none}
+.такт.активен .тезис:nth-child(1){transition-delay:.3s}
+.такт.активен .тезис:nth-child(2){transition-delay:1.1s}
+.такт.активен .тезис:nth-child(3){transition-delay:1.9s}
+body.снимок .тезис{transition:none !important}
+
+/* ---------- цепочка (видео) ---------- */
+#видео_цепочка{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#этапы{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);
+  display:flex;gap:14px;align-items:center}
+.этап{padding:12px 26px;border:1px solid rgba(124,141,166,.35);border-radius:8px;
+  background:var(--стекло);font-size:26px;color:var(--приглуш);letter-spacing:.03em;
+  transition:all .6s ease}
+.этап.горит{color:var(--текст);border-color:var(--циан);
+  box-shadow:0 0 24px rgba(79,227,255,.25);}
+.этап .точка{display:inline-block;width:9px;height:9px;border-radius:50%;
+  background:var(--приглуш);margin-right:12px;vertical-align:2px;transition:background .6s}
+.этап.горит .точка{background:var(--циан);box-shadow:0 0 10px var(--циан)}
+.стрелка_этап{color:rgba(124,141,166,.5);font-size:22px}
+
+/* ---------- карта ---------- */
+.такт_карта{background:radial-gradient(ellipse at 50% 42%,#0A1422 0%,var(--фон0) 72%)}
+svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)}
+/* область прозрачная — сквозь неё виден генерированный рельеф, обрезанный
+   точным контуром страны: красота из генерации, геометрия из вектора */
+.область{fill:rgba(16,34,52,.38);stroke:rgba(79,227,255,.55);stroke-width:1.1;
+  transition:fill 1.1s ease}
+/* тона запасов включаются волной: класс .цвета_пошли на svg + transition-delay
+   на каждой области, выставленный из кода */
+.цвета_пошли .область.тон1{fill:rgba(31,80,105,.55)}
+.цвета_пошли .область.тон2{fill:rgba(26,66,92,.5)}
+.цвета_пошли .область.тон3{fill:rgba(22,55,80,.5)}
+.цвета_пошли .область.тон4{fill:rgba(35,95,115,.6)}
+.рельеф_подложка{opacity:.85}
+.огонёк{fill:#F0C070;opacity:0;transition:opacity 1.2s ease}
+.цвета_пошли .огонёк, .контурная .огонёк{opacity:.75}
+.бейдж{opacity:0;transition:opacity .8s ease;stroke:rgba(5,8,16,.6);stroke-width:1}
+.цвета_пошли .бейдж{opacity:1}
+.бейдж.норма{fill:var(--зелёный);filter:drop-shadow(0 0 6px rgba(62,213,152,.7))}
+.бейдж.внимание{fill:var(--янтарь);filter:drop-shadow(0 0 6px rgba(240,174,74,.8))}
+.бейдж.тревога{fill:var(--красный);filter:drop-shadow(0 0 10px rgba(255,90,79,.9));
+  animation:бейдж_пульс 1.6s ease-in-out infinite}
+@keyframes бейдж_пульс{0%,100%{r:8}50%{r:12}}
+.свечение_страны{fill:none;stroke:rgba(79,227,255,.35);stroke-width:5;
+  filter:blur(6px)}
+.контур_страны{fill:none;stroke:var(--циан);stroke-width:2.2;
+  filter:drop-shadow(0 0 14px rgba(79,227,255,.6))}
+.линия_данных{fill:none;stroke:var(--циан);stroke-width:2.4;stroke-linecap:round;
+  filter:drop-shadow(0 0 8px rgba(79,227,255,.8));
+  stroke-dasharray:var(--длина);stroke-dashoffset:var(--длина)}
+/* линии стартуют не с активацией такта, а после пролёта моста */
+.линии_пошли .линия_данных{animation:протяжка 2.2s ease forwards}
+@keyframes протяжка{to{stroke-dashoffset:0}}
+.точка_объекта{fill:var(--янтарь);filter:drop-shadow(0 0 8px var(--янтарь))}
+#астана_свет{fill:var(--циан);filter:drop-shadow(0 0 30px var(--циан));opacity:0}
+.линии_пошли #астана_свет{animation:вспышка 1.4s ease 2.2s forwards}
+.астана_метка{fill:var(--текст);font-size:17px;font-weight:600;
+  letter-spacing:.14em;opacity:0;transition:opacity 1s ease 3.4s;
+  text-shadow:0 1px 8px rgba(0,0,0,.9)}
+.линии_пошли .астана_метка{opacity:.92}
+/* мост: генерированный пролёт от луча НПЗ к карте; последний кадр моста
+   совпадает с картой пиксель в пиксель, поэтому растворение невидимо */
+#видео_мост{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:1;transition:opacity .9s ease;z-index:3}
+.мост_прошёл #видео_мост{opacity:0;pointer-events:none}
+@keyframes вспышка{from{opacity:0;r:6}to{opacity:1}}
+#знак_аян{position:absolute;left:50%;top:13%;transform:translate(-50%,-50%) scale(.8);
+  opacity:0;transition:all 1s ease;font-size:64px;font-weight:700;letter-spacing:.05em;
+  text-shadow:0 0 40px rgba(79,227,255,.5)}
+#знак_аян b{color:var(--циан)}
+.такт.активен #знак_аян.показан{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* красный регион */
+.улытау_тревога{fill:rgba(255,90,79,.0);stroke:var(--красный);stroke-width:0;
+  transition:none}
+.тревога_идёт .улытау_тревога{animation:пульс 2.2s ease-in-out infinite;
+  filter:drop-shadow(0 0 18px rgba(255,90,79,.7))}
+@keyframes пульс{0%,100%{fill:rgba(255,90,79,.25);stroke-width:1.5}
+  50%{fill:rgba(255,90,79,.55);stroke-width:2.5}}
+.отбой .улытау_тревога{animation:none;fill:rgba(62,213,152,.22);
+  stroke:var(--зелёный);stroke-width:1.5;filter:drop-shadow(0 0 14px rgba(62,213,152,.5));
+  transition:all 2s ease}
+/* донор поставки: отдал часть запаса — статус мягко уходит в «внимание».
+   Смысловая пара к отбою: помощь не бесплатна, система это тоже видит */
+.область[data-ключ="atyrau"], .бейдж[data-ключ="atyrau"]{transition:fill 2s ease}
+.отбой .область[data-ключ="atyrau"]{fill:rgba(240,174,74,.24)}
+.отбой .бейдж[data-ключ="atyrau"]{fill:var(--янтарь);
+  filter:drop-shadow(0 0 6px rgba(240,174,74,.8))}
+.отбой .бейдж[data-ключ="ulytau"]{fill:var(--зелёный);animation:none;
+  filter:drop-shadow(0 0 6px rgba(62,213,152,.8));transition:fill 2s ease}
+
+/* карточка проблемного региона */
+#карточка{position:absolute;left:1150px;top:300px;width:430px;padding:26px 30px;
+  background:var(--стекло);border:1px solid rgba(255,90,79,.55);border-radius:12px;
+  opacity:0;transform:translateY(14px);transition:all .8s ease .8s}
+.такт.активен #карточка.показана{opacity:1;transform:none}
+#карточка h3{font-size:27px;color:var(--красный);margin-bottom:12px;font-weight:600}
+#карточка p{font-size:22px;color:var(--текст);line-height:1.45}
+#карточка .мелко{font-size:18px;color:var(--приглуш);margin-top:10px}
+
+/* поток поставок */
+.поток{fill:none;stroke:var(--янтарь);stroke-width:3;stroke-linecap:round;
+  filter:drop-shadow(0 0 10px rgba(240,174,74,.8));
+  stroke-dasharray:14 26;opacity:0;transition:opacity .8s ease}
+/* поток включается отдельным классом: сначала тревога, потом пошло топливо,
+   потом отбой — причинность читается по порядку */
+.поток_идёт .поток{opacity:1;animation:бег 1.1s linear infinite}
+@keyframes бег{to{stroke-dashoffset:-40}}
+
+/* рамка «экран ДАЦ» */
+#рамка_дац{position:absolute;left:110px;top:70px;right:110px;bottom:120px;
+  border:1px solid rgba(79,227,255,.35);border-radius:16px;
+  box-shadow:inset 0 0 60px rgba(79,227,255,.06);pointer-events:none}
+#рамка_дац .шапка{position:absolute;left:0;top:0;right:0;height:52px;
+  border-bottom:1px solid rgba(79,227,255,.25);display:flex;align-items:center;
+  padding:0 24px;font-size:21px;color:var(--приглуш);letter-spacing:.05em}
+#рамка_дац .шапка b{color:var(--циан);margin-right:10px;font-weight:600}
+
+/* ---------- подписи тактов ---------- */
+#подпись{position:absolute;left:50%;bottom:56px;transform:translateX(-50%) translateY(12px);
+  max-width:1560px;text-align:center;opacity:0;transition:all .8s ease;pointer-events:none}
+#подпись.видна{opacity:1;transform:translateX(-50%)}
+#подпись .большая{font-size:40px;font-weight:600;letter-spacing:.02em;
+  white-space:nowrap;text-shadow:0 2px 24px rgba(0,0,0,.9)}
+#подпись .малая{font-size:24px;color:var(--приглуш);margin-top:8px}
+
+/* ---------- финал ---------- */
+#финал .центр{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:44px}
+#эффекты{display:grid;grid-template-columns:repeat(2,540px);gap:22px}
+.эффект{padding:30px 36px;background:var(--стекло);border:1px solid rgba(79,227,255,.3);
+  border-radius:12px;font-size:30px;text-align:center;letter-spacing:.02em}
+#цифра{font-size:76px;font-weight:700;color:var(--циан);
+  text-shadow:0 0 50px rgba(79,227,255,.4)}
+#цифра span{font-size:32px;color:var(--текст);font-weight:400;display:block;margin-top:6px}
+#дорожка{font-size:24px;color:var(--приглуш);letter-spacing:.03em}
+#дорожка b{color:var(--текст);font-weight:600}
+
+/* режим ?снимок=1: все анимации в конечном состоянии — для покадровой
+   проверки headless-хромом, где виртуальное время не крутит CSS-анимации */
+body.снимок *{animation-play-state:paused !important}
+body.снимок .линия_данных{animation:none !important;stroke-dashoffset:0 !important}
+body.снимок #астана_свет{animation:none !important;opacity:1 !important}
+body.снимок #знак_аян{opacity:1 !important;transform:translate(-50%,-50%) scale(1) !important}
+body.снимок #подпись{transition:none}
+body.снимок .тревога_идёт .улытау_тревога{animation:none !important;
+  fill:rgba(255,90,79,.45) !important;stroke-width:2 !important}
+body.снимок .поток{animation:none !important;opacity:1 !important}
+body.снимок .область, body.снимок .бейдж, body.снимок .огонёк{
+  transition:none !important;transition-delay:0s !important}
+body.снимок .бейдж.тревога{animation:none !important}
+
+/* режим ?пусто=1: карта без линий и знака — конечный кадр для генерации моста */
+body.пусто .линия_данных, body.пусто #астана_свет,
+body.пусто #знак_аян, body.пусто #подпись, body.пусто #видео_мост{display:none !important}
+
+/* подсказка управления (гаснет после первого шага) */
+#подсказка{position:absolute;right:28px;bottom:20px;font-size:16px;color:rgba(124,141,166,.55);
+  transition:opacity 1s}
+</style>
+</head>
+<body>
+<div id="сцена">
+
+  <!-- ТАКТ 0: титул. Висит фоном сколько нужно — «чёрного экрана быть не должно». -->
+  <section class="такт активен" id="титул">
+    <div id="титул_фон"></div><div class="виньетка"></div>
+    <div class="центр">
+      <img id="лого" src="медиа/лого_кмг.png" alt="">
+      <div id="имя">KMG.<b>AIAN</b></div>
+      <div id="подзаг">ИИ-ассистент топливного баланса страны</div>
+    </div>
+  </section>
+
+  <!-- ТАКТ 1: что это даёт государству — эффект сразу, до устройства системы
+       (главное требование Председателя с репетиции) -->
+  <section class="такт" id="зачем">
+    <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.55)"></div>
+    <div class="виньетка"></div>
+    <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:46px">
+      <div id="зачем_заголовок">Что это даёт государству</div>
+      <div class="тезисы">
+        <div class="тезис">Запасы каждой области — в режиме онлайн</div>
+        <div class="тезис">Топливо в пути — на карте, вагон за вагоном</div>
+        <div class="тезис">Дефицит предупреждается до того, как случился</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ТАКТ 2: цепочка одним пролётом (вырезка Seedance 3.4–20.9 с) -->
+  <section class="такт" id="цепочка">
+    <video id="видео_цепочка" src="медиа/цепочка.mp4" muted playsinline preload="auto"></video>
+    <div id="этапы">
+      <div class="этап" data-от="0"    data-до="5.4"><span class="точка"></span>Добыча</div>
+      <div class="стрелка_этап">→</div>
+      <div class="этап" data-от="5.4"  data-до="9.8"><span class="точка"></span>Транспортировка</div>
+      <div class="стрелка_этап">→</div>
+      <div class="этап" data-от="9.8"  data-до="14.6"><span class="точка"></span>Переработка</div>
+      <div class="стрелка_этап">→</div>
+      <div class="этап" data-от="14.6" data-до="99"><span class="точка"></span>Данные&nbsp;в&nbsp;центр</div>
+    </div>
+  </section>
+
+  <!-- ТАКТ 2: карта, данные стекаются в Астану -->
+  <section class="такт такт_карта" id="карта_центр">
+    <video id="видео_мост" src="медиа/мост.mp4" muted playsinline preload="auto"></video>
+    <div id="знак_аян">KMG.<b>AIAN</b></div>
+  </section>
+
+  <!-- ТАКТ 3: экран ДАЦ, области, проблемный регион -->
+  <section class="такт такт_карта" id="карта_области">
+    <div id="рамка_дац"><div class="шапка"><b>ДАЦ</b> Диспетчерско-аналитический центр · мониторинг запасов нефтепродуктов</div></div>
+    <div id="карточка">
+      <h3>Проблемный регион</h3>
+      <p>Остатки ниже порога.<br>Запаса — считанные дни, топливо уже в пути.</p>
+      <div class="мелко">Запасы: нефтебазы · в пути (КТЖ) · в днях потребления</div>
+    </div>
+  </section>
+
+  <!-- ТАКТ 4: решение, поток поставок -->
+  <section class="такт такт_карта" id="карта_решение"></section>
+
+  <!-- ТАКТ 5: передача экрана живой системе -->
+  <section class="такт" id="передача">
+    <div id="титул_фон2" style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover"></div>
+    <div class="виньетка"></div>
+    <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px">
+      <div style="font-size:88px;font-weight:700;letter-spacing:.04em">KMG.<b style="color:var(--циан)">AIAN</b></div>
+      <div style="font-size:40px;color:var(--приглуш)">Живая демонстрация</div>
+    </div>
+  </section>
+
+  <!-- ТАКТ 6: финал после живой демонстрации -->
+  <section class="такт" id="финал">
+    <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover"></div>
+    <div class="виньетка" style="background:radial-gradient(ellipse at center,rgba(0,0,0,.35) 0%,rgba(0,0,0,.75) 100%)"></div>
+    <div class="центр">
+      <div id="эффекты">
+        <div class="эффект">Прозрачность рынка</div>
+        <div class="эффект">Предсказуемость поставок</div>
+        <div class="эффект">Защита добросовестных участников</div>
+        <div class="эффект">Снижение социального напряжения</div>
+      </div>
+      <div id="цифра">22,5 млрд тг<span>ожидаемый эффект · 2026–2030</span></div>
+      <div id="дорожка"><b>КТЖ — онлайн</b> · Минэнерго — интеграция · сети АЗС — следующий этап</div>
+    </div>
+  </section>
+
+  <div id="подпись"><div class="большая"></div><div class="малая"></div></div>
+  <div id="подсказка">→ вперёд · ← назад</div>
+</div>
+
+<script>
+"use strict";
+/* ============ масштаб сцены ============ */
+const сцена = document.getElementById('сцена');
+function подмасштаб(){
+  // visualViewport точнее innerWidth при зуме браузера и на телефонах
+  const ш = (window.visualViewport && visualViewport.width)  || innerWidth;
+  const в = (window.visualViewport && visualViewport.height) || innerHeight;
+  const м = Math.min(ш/1920, в/1080);
+  сцена.style.transform = `translate(-50%,-50%) scale(${м})`;
+}
+addEventListener('resize', подмасштаб);
+addEventListener('orientationchange', подмасштаб);
+window.visualViewport && visualViewport.addEventListener('resize', подмасштаб);
+addEventListener('load', подмасштаб);
+подмасштаб();
+
+/* ============ подписи ============ */
+/* Подпись описывает кадр, к которому лента приходит, — выходит к концу такта
+   (правило CLAUDE.md), поэтому у каждого такта своя задержка появления. */
+const подписьЭл = document.getElementById('подпись');
+let таймерПодписи = null;
+function подпись(большая, малая, задержка){
+  clearTimeout(таймерПодписи);
+  подписьЭл.classList.remove('видна');
+  if(!большая){ return; }
+  таймерПодписи = setTimeout(()=>{
+    подписьЭл.querySelector('.большая').textContent = большая;
+    подписьЭл.querySelector('.малая').textContent = малая || '';
+    подписьЭл.classList.add('видна');
+  }, (typeof режимСнимка!=='undefined' && режимСнимка) ? 0 : (задержка ?? 400));
+}
+
+/* ============ такты ============ */
+const видео = document.getElementById('видео_цепочка');
+const ТАКТЫ = [
+  { id:'титул',
+    вход(){ подпись('', ''); } },
+  { id:'зачем',
+    вход(){ подпись('', ''); } },
+  { id:'цепочка',
+    вход(){
+      видео.currentTime = 0; видео.play();
+      подпись('Вся цепочка — в цифре',
+              'добыча · транспортировка · переработка · реализация', 15500);
+    },
+    выход(){ видео.pause(); } },
+  { id:'карта_центр',
+    вход(){
+      const с = document.getElementById('карта_центр');
+      const м = document.getElementById('видео_мост');
+      с.classList.remove('мост_прошёл','линии_пошли');
+      let пущено = false;
+      const пуск = ()=>{
+        if(пущено) return; пущено = true;
+        с.classList.add('мост_прошёл','линии_пошли');
+        подпись('Аналитический центр КМГ — более 10 лет данных',
+                'на этой основе работает искусственный интеллект', 2600);
+        setTimeout(()=>document.getElementById('знак_аян').classList.add('показан'), 3400);
+      };
+      if(м && !м.error && м.getAttribute('src')){
+        м.currentTime = 0;
+        м.play().then(()=>{ м.onended = пуск; }).catch(пуск);
+        setTimeout(пуск, 7000); // страховка: мост завис — карта всё равно оживает
+      } else пуск();
+      if(режимСнимка) пуск();
+    },
+    выход(){
+      const м = document.getElementById('видео_мост');
+      м && м.pause();
+      document.getElementById('знак_аян').classList.remove('показан');
+      document.getElementById('карта_центр').classList.remove('мост_прошёл','линии_пошли');
+    } },
+  { id:'карта_области',
+    вход(){
+      const с = document.getElementById('карта_области');
+      с.classList.remove('отбой');
+      const свг = с.querySelector('svg.карта');
+      setTimeout(()=>свг && свг.classList.add('цвета_пошли'), 300);
+      setTimeout(()=>с.classList.add('тревога_идёт'), 2200); // тревога после волны окраски
+      setTimeout(()=>document.getElementById('карточка').classList.add('показана'), 3000);
+      подпись('Система сама находит зоны риска',
+              'запасы каждой области: нефтебазы · в пути · в днях потребления', 3800);
+    },
+    выход(){
+      const с = document.getElementById('карта_области');
+      с.classList.remove('тревога_идёт');
+      const свг = с.querySelector('svg.карта');
+      свг && свг.classList.remove('цвета_пошли');
+      document.getElementById('карточка').classList.remove('показана');
+    } },
+  { id:'карта_решение',
+    вход(){
+      const с = document.getElementById('карта_решение');
+      const свг = с.querySelector('svg.карта');
+      свг && свг.classList.add('цвета_пошли'); // карта приходит уже окрашенной
+      с.classList.add('тревога_идёт');
+      setTimeout(()=>с.classList.add('поток_идёт'), 1800);     // топливо пошло с запада
+      setTimeout(()=>{ с.classList.remove('тревога_идёт'); с.classList.add('отбой'); }, 3600);
+      подпись('Дефицит предотвращён — до того, как случился',
+              'скорректировать поставки · ускорить отгрузку · перераспределить объёмы', 4200);
+    },
+    выход(){ document.getElementById('карта_решение').classList.remove('отбой','поток_идёт'); } },
+  { id:'передача',
+    вход(){ подпись('', ''); } },
+  { id:'финал',
+    вход(){ подпись('', ''); } },
+];
+let номер = 0;
+/* ?такт=N — открыть показ сразу с такта N (репетиции, проверка кадров).
+   Приём перенесён из ЦД. */
+const стартовыйТакт = +(new URLSearchParams(location.search).get('такт') || 0);
+const режимСнимка = !!(new URLSearchParams(location.search).get('снимок'));
+if(режимСнимка) document.body.classList.add('снимок');
+if(new URLSearchParams(location.search).get('пусто')) document.body.classList.add('пусто');
+function показать(н){
+  if(н<0 || н>=ТАКТЫ.length || н===номер && document.querySelector('.такт.активен')) {}
+  const был = ТАКТЫ[номер];
+  if(был && был.выход) был.выход();
+  номер = Math.max(0, Math.min(ТАКТЫ.length-1, н));
+  document.querySelectorAll('.такт').forEach(с=>с.classList.remove('активен'));
+  document.getElementById(ТАКТЫ[номер].id).classList.add('активен');
+  ТАКТЫ[номер].вход && ТАКТЫ[номер].вход();
+  document.getElementById('подсказка').style.opacity = номер ? 0 : 1;
+}
+addEventListener('keydown', е=>{
+  if(е.key==='ArrowRight'||е.key===' '||е.key==='PageDown'){ е.preventDefault(); показать(номер+1); }
+  if(е.key==='ArrowLeft'||е.key==='PageUp'){ е.preventDefault(); показать(номер-1); }
+});
+addEventListener('click', ()=>показать(номер+1));
+
+/* цепочка не держит паузу на последнем кадре: луч уходит в небо — и сразу
+   мост на карту (правка заказчика). Назад стрелкой вернуться по-прежнему можно. */
+видео.addEventListener('ended', ()=>{
+  if(ТАКТЫ[номер] && ТАКТЫ[номер].id==='цепочка') показать(номер+1);
+});
+
+/* этапная лента цепочки — подсветка по времени видео */
+видео.addEventListener('timeupdate', ()=>{
+  document.querySelectorAll('.этап').forEach(э=>{
+    const т = видео.currentTime;
+    э.classList.toggle('горит', т >= +э.dataset.от && т < +э.dataset.до);
+  });
+});
+
+/* ============ карта ============ */
+/* Простая равнопромежуточная проекция с поправкой на широту 48° —
+   для показа на всю страну достаточно, картографической точности не требуется. */
+const КОС = Math.cos(48*Math.PI/180);
+let ПРОЕКЦИЯ = null;
+function проецируй(лон, лат){
+  const {х0,у0,к} = ПРОЕКЦИЯ;
+  return [ (лон-х0)*КОС*к, (у0-лат)*к ];
+}
+async function построитьКарты(){
+  const данные = await (await fetch('данные/области_кз.json')).json();
+  const огни = await (await fetch('данные/огни_кз.json')).json();
+  // границы
+  let минЛон=999,максЛон=-999,минЛат=999,максЛат=-999;
+  for(const о of Object.values(данные)) for(const кольцо of о.кольца)
+    for(const [лон,лат] of кольцо){
+      минЛон=Math.min(минЛон,лон); максЛон=Math.max(максЛон,лон);
+      минЛат=Math.min(минЛат,лат); максЛат=Math.max(максЛат,лат);
+    }
+  const Ш=1500, В=830;
+  const к = Math.min(Ш/((максЛон-минЛон)*КОС), В/(максЛат-минЛат));
+  ПРОЕКЦИЯ = {х0:минЛон, у0:максЛат, к};
+  const [шир, выс] = [ (максЛон-минЛон)*КОС*к, (максЛат-минЛат)*к ];
+
+  function путь(о){
+    return о.кольца.map(кольцо=>
+      'M'+кольцо.map(п=>проецируй(п[0],п[1]).map(ч=>ч.toFixed(1)).join(',')).join('L')+'Z'
+    ).join(' ');
+  }
+  const НС = 'http://www.w3.org/2000/svg';
+  function свг(род){ const э=document.createElementNS(НС,род); return э; }
+  const тона = ['тон1','тон2','тон3','тон4'];
+
+  /* состояние областей на экране ДАЦ: иллюстративное, без цифр — чтобы не
+     спорить с живой системой в день показа. Тревога одна — Ұлытау. */
+  const СТАТУСЫ = { ulytau:'тревога', mangystau:'внимание', kostanay:'внимание' };
+  let счётчикКарт = 0;
+  function собратьКарту(секция, режим){
+    const s = свг('svg');
+    s.setAttribute('viewBox', `0 0 ${шир} ${выс}`);
+    s.setAttribute('width', 1500); s.setAttribute('height', выс*1500/шир);
+    s.classList.add('карта');
+    if(режим==='контур') s.classList.add('контурная');
+
+    // рельеф из генерации, обрезанный точным векторным контуром страны:
+    // границы остаются резкими, внутренность — живой
+    const идОбрезки = 'контур_страны_'+(++счётчикКарт);
+    const дефы = свг('defs');
+    const обрезка = свг('clipPath'); обрезка.id = идОбрезки;
+    for(const о of Object.values(данные)){
+      const п = свг('path'); п.setAttribute('d', путь(о)); обрезка.appendChild(п);
+    }
+    дефы.appendChild(обрезка); s.appendChild(дефы);
+    const рельеф = свг('image');
+    рельеф.setAttribute('href','медиа/рельеф.jpg');
+    рельеф.setAttribute('x',-40); рельеф.setAttribute('y',-40);
+    рельеф.setAttribute('width',шир+80); рельеф.setAttribute('height',выс+80);
+    рельеф.setAttribute('preserveAspectRatio','xMidYMid slice');
+    рельеф.setAttribute('clip-path',`url(#${идОбрезки})`);
+    рельеф.classList.add('рельеф_подложка');
+    s.appendChild(рельеф);
+
+    let и=0;
+    for(const [ключ,о] of Object.entries(данные)){
+      const p = свг('path');
+      p.setAttribute('d', путь(о));
+      p.classList.add('область');
+      p.setAttribute('data-ключ', ключ);
+      if(режим!=='контур'){
+        p.classList.add(тона[и%тона.length]);
+        p.style.transitionDelay = (и*70)+'ms'; // волна окраски с запада на восток по порядку данных
+      }
+      s.appendChild(p); и++;
+      if(ключ==='ulytau' && режим!=='контур'){
+        const тр = свг('path');
+        тр.setAttribute('d', путь(о));
+        тр.classList.add('улытау_тревога'); // класс, не id: слой есть в двух тактах
+        s.appendChild(тр);
+      }
+    }
+
+    // огни городов (данные ЦД), тоже под обрезку — за контур не вылезут
+    const слойОгней = свг('g');
+    слойОгней.setAttribute('clip-path',`url(#${идОбрезки})`);
+    for(const [лон,лат,яркость] of огни){
+      const [x,y] = проецируй(лон,лат);
+      const т = свг('circle');
+      т.setAttribute('cx',x); т.setAttribute('cy',y);
+      т.setAttribute('r', 1.2 + яркость*2.2);
+      т.classList.add('огонёк');
+      т.style.transitionDelay = (Math.random()*1.5)+'s';
+      слойОгней.appendChild(т);
+    }
+    s.appendChild(слойОгней);
+
+    // бейджи состояния областей — только на экране ДАЦ
+    if(режим!=='контур'){
+      let к=0;
+      for(const [ключ,о] of Object.entries(данные)){
+        if(ключ==='astana'||ключ==='almaty'||ключ==='shymkent') continue; // города-точки не бейджим
+        const кольцо = о.кольца[0];
+        let сх=0, су=0;
+        for(const [лон,лат] of кольцо){ const [x,y]=проецируй(лон,лат); сх+=x; су+=y; }
+        сх/=кольцо.length; су/=кольцо.length;
+        const б = свг('circle');
+        б.setAttribute('cx',сх); б.setAttribute('cy',су);
+        б.setAttribute('r', СТАТУСЫ[ключ]==='тревога' ? 9 : 6);
+        б.setAttribute('data-ключ', ключ);
+        б.classList.add('бейдж', СТАТУСЫ[ключ]||'норма');
+        б.style.transitionDelay = (1.4 + к*0.06)+'s'; // бейджи после волны окраски
+        s.appendChild(б); к++;
+      }
+    }
+    секция.prepend(s);
+    return s;
+  }
+
+  /* такт 2: страна + линии данных в Астану */
+  const с2 = собратьКарту(document.getElementById('карта_центр'), 'контур');
+  const АСТАНА = проецируй(71.43, 51.17);
+  const ИСТОКИ = [ // месторождения запада, НПЗ, юг — иллюстративные точки сбора
+    [53.0,46.4],[51.9,47.1],[55.1,45.3],   // запад: промыслы и Атырауский НПЗ
+    [76.96,52.29],                          // Павлодарский НПЗ
+    [69.59,42.32],                          // Шымкентский НПЗ
+    [63.6,53.2],[80.3,50.4],[57.2,50.3]     // север и восток — узлы КТЖ
+  ];
+  for(const [лон,лат] of ИСТОКИ){
+    const [x1,y1]=проецируй(лон,лат), [x2,y2]=АСТАНА;
+    const пх=(x1+x2)/2 + (y2-y1)*0.25, пу=(y1+y2)/2 - (x2-x1)*0.25;
+    const л = свг('path');
+    л.setAttribute('d', `M${x1},${y1} Q${пх},${пу} ${x2},${y2}`);
+    л.classList.add('линия_данных');
+    с2.appendChild(л);
+    const длина = л.getTotalLength();
+    л.style.setProperty('--длина', длина);
+    л.style.animationDelay = (Math.random()*0.9)+'s';
+    const т = свг('circle');
+    т.setAttribute('cx',x1); т.setAttribute('cy',y1); т.setAttribute('r',5);
+    т.classList.add('точка_объекта');
+    с2.appendChild(т);
+  }
+  const свет = свг('circle');
+  свет.setAttribute('cx',АСТАНА[0]); свет.setAttribute('cy',АСТАНА[1]);
+  свет.setAttribute('r',13); свет.id='астана_свет';
+  с2.appendChild(свет);
+  const метка = свг('text');
+  метка.setAttribute('x', АСТАНА[0]); метка.setAttribute('y', АСТАНА[1]-24);
+  метка.setAttribute('text-anchor','middle');
+  метка.classList.add('астана_метка');
+  метка.textContent = 'АСТАНА · ДАЦ';
+  с2.appendChild(метка);
+
+  /* такт 3: области с тонами и тревогой */
+  собратьКарту(document.getElementById('карта_области'), 'области');
+
+  /* такт 4: то же + поток поставок Павлодар→Ұлытау */
+  /* поток с запада: Атырауский НПЗ → Ұлытау. Запад — главный источник
+     нефтепродуктов; Павлодар отклонён правкой заказчика */
+  const с4 = собратьКарту(document.getElementById('карта_решение'), 'области');
+  const [пх1,пу1]=проецируй(51.88,47.11), [пх2,пу2]=проецируй(66.8,48.0);
+  const пкх=(пх1+пх2)/2, пку=(пу1+пу2)/2 - 55;
+  const поток = свг('path');
+  поток.setAttribute('d', `M${пх1},${пу1} Q${пкх},${пку} ${пх2},${пу2}`);
+  поток.classList.add('поток');
+  с4.appendChild(поток);
+}
+построитьКарты().then(()=>{ if(стартовыйТакт) показать(стартовыйТакт); });
+</script>
+</body>
+</html>
