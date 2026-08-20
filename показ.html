@@ -411,7 +411,8 @@ body.снимок .чат_реплика.видна, body.снимок .дума
 /* ---------- финал ---------- */
 #финал .центр{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:44px}
-#эффекты{display:grid;grid-template-columns:repeat(2,min(42vw,540px));gap:2vmin}
+/* три карточки в один ряд: с двумя рядами сетка выглядела недособранной */
+#эффекты{display:grid;grid-template-columns:repeat(3,min(28vw,420px));gap:2vmin}
 .эффект{padding:2.4vmin 3vmin;display:flex;flex-direction:column;align-items:center;
   gap:1.3vmin;
   background:linear-gradient(165deg,rgba(16,30,48,.94),rgba(7,14,26,.9));
@@ -477,8 +478,7 @@ body.пусто #знак_аян, body.пусто #подпись, body.пуст
 #финал.активен .эффект:nth-child(1){transition-delay:.25s}
 #финал.активен .эффект:nth-child(2){transition-delay:.45s}
 #финал.активен .эффект:nth-child(3){transition-delay:.65s}
-#финал.активен .эффект:nth-child(4){transition-delay:.85s}
-#финал #цифра{opacity:0;transform:translateY(10px);transition:all .8s ease 1.15s}
+#финал #цифра{opacity:0;transform:translateY(10px);transition:all .8s ease .95s}
 #финал.активен #цифра{opacity:1;transform:none}
 #финал #дорожка{opacity:0;transition:opacity .8s ease 1.7s}
 #финал.активен #дорожка{opacity:1}
@@ -596,16 +596,6 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     </div>
   </section>
 
-  <!-- ТАКТ 4: передача экрана живой системе -->
-  <section class="такт" id="передача">
-    <div id="титул_фон2" style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.68)"></div>
-    <div class="виньетка"></div>
-    <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.8vmin">
-      <div class="дисплей" style="font-size:clamp(34px,6.4vmin,76px);font-weight:700;letter-spacing:.02em">KMG.<b class="град_текст">AIAN</b></div>
-      <div id="живая_надпись" style="font-size:clamp(20px,3.7vmin,44px);color:var(--приглуш)">Живая демонстрация</div>
-    </div>
-  </section>
-
   <!-- ТАКТ 6: финал после живой демонстрации -->
   <section class="такт" id="финал">
     <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.5)"></div>
@@ -619,11 +609,8 @@ body.снимок #финал .эффект, body.снимок #финал #ци
           <svg viewBox="0 0 24 24"><path d="M3 17L9 11L13 14.4L21 6"/><path d="M15.5 6H21V11.5"/></svg>
           <span>Предсказуемость поставок</span></div>
         <div class="эффект">
-          <svg viewBox="0 0 24 24"><path d="M12 3L19 5.8V11C19 15.9 16.1 19.4 12 21C7.9 19.4 5 15.9 5 11V5.8Z"/><path d="M8.8 11.6L11.2 14.2L15.4 9.6"/></svg>
-          <span>Защита добросовестных участников</span></div>
-        <div class="эффект">
           <svg viewBox="0 0 24 24"><path d="M3 14.5C5 9.5 7 9.5 9 12.5C11 15.5 13 8.5 15 10.5C17 12.3 19 12 21 12"/></svg>
-          <span>Снижение социального напряжения</span></div>
+          <span>Недопущение социального напряжения</span></div>
       </div>
       <div id="цифра" class="дисплей"><span id="цифра_число" class="град_текст">22,5 млрд тг</span><span>ожидаемый эффект · 2026–2030</span></div>
       <!-- строка дорожной карты снята заказчиком: финал держится на
@@ -799,8 +786,6 @@ const ТАКТЫ = [
       document.querySelectorAll('#аян_чат .чат_реплика').forEach(р=>р.classList.remove('видна'));
       сброситьСтопку(); // источники улетают вместе с картой
     } },
-  { id:'передача',
-    вход(){ подпись('', ''); } },
   { id:'финал',
     вход(){
       подпись('', '');
@@ -810,7 +795,8 @@ const ТАКТЫ = [
         if(window.gsap && !режимСнимка){
           const сч = {в: 0};
           gsap.killTweensOf(сч);
-          gsap.to(сч, {в: 22.5, duration: 1.5, delay: 1.15, ease: 'power2.out',
+          // задержка совпадает с выходом цифры: карточек стало три
+          gsap.to(сч, {в: 22.5, duration: 1.5, delay: .95, ease: 'power2.out',
             onUpdate(){ эл.textContent = сч.в.toFixed(1).replace('.', ',') + ' млрд тг'; },
             onComplete(){ эл.textContent = '22,5 млрд тг'; }});
         }
