@@ -278,8 +278,9 @@ body.снимок .думает .узел_думы,body.снимок .думае
   background:linear-gradient(165deg,rgba(14,28,46,.95),rgba(6,12,24,.92));
   border:1px solid rgba(62,230,184,.4);border-top-color:rgba(215,226,242,.18);
   box-shadow:0 14px 48px rgba(0,0,0,.6);
-  opacity:0;transform:translateY(14px);transition:all .6s ease;pointer-events:none}
-.думает #аян_чат{opacity:1;transform:none}
+  opacity:0;transform:translateY(14px);pointer-events:none}
+/* панель тоже проявляется анимацией — по той же причине, что и реплики */
+.думает #аян_чат{animation:реплика_вход .55s ease forwards}
 .чат_шапка{display:flex;align-items:baseline;gap:1vmin;
   padding-bottom:1.2vmin;margin-bottom:1.2vmin;
   border-bottom:1px solid rgba(62,230,184,.22)}
@@ -296,21 +297,28 @@ body.снимок .думает .узел_думы,body.снимок .думае
 .чат_думает i:nth-child(2){animation-delay:.2s}
 .чат_думает i:nth-child(3){animation-delay:.4s}
 @keyframes точка_думы{0%,60%,100%{opacity:.25}30%{opacity:1}}
-.чат_реплика{margin-top:1.2vmin;padding:1.2vmin 1.4vmin;border-radius:10px;
-  background:rgba(79,227,255,.07);border-left:2px solid rgba(79,227,255,.5);
-  opacity:0;transform:translateY(8px);transition:all .5s ease}
-.чат_реплика.видна{opacity:1;transform:none}
+/* Проявление — анимацией, а не переходом: переход в некоторых условиях
+   (фоновая вкладка, смена такта) не докручивался, и реплики оставались
+   полупрозрачными. Анимация с forwards доходит до конца всегда. */
+.чат_реплика{margin-top:1.2vmin;padding:1.3vmin 1.5vmin;border-radius:10px;
+  background:rgba(79,227,255,.13);border-left:3px solid var(--циан);
+  box-shadow:0 0 18px rgba(79,227,255,.12);
+  opacity:0;transform:translateY(8px)}
+.чат_реплика.видна{animation:реплика_вход .45s ease forwards}
+@keyframes реплика_вход{from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}}
 .чат_реплика b{display:block;font-size:clamp(13px,1.9vmin,22px);font-weight:600;
-  line-height:1.25;margin-bottom:.5vmin}
+  line-height:1.25;margin-bottom:.5vmin;color:#EAF4FF}
 .чат_реплика span{display:block;font-size:clamp(10px,1.5vmin,17px);
-  color:var(--приглуш);line-height:1.35}
+  color:rgba(215,226,242,.82);line-height:1.35}
 /* итоговая реплика — та самая «модалка» после решения */
 .чат_реплика.итог{background:rgba(62,230,184,.12);border-left-color:var(--мята);
   box-shadow:0 0 24px rgba(62,230,184,.18)}
 .чат_реплика.итог b{color:#EAFBF5}
 .чат_реплика.итог span{color:var(--мята)}
 body.снимок #аян_чат,body.снимок .чат_реплика{transition:none !important}
-body.снимок .чат_реплика.видна{opacity:1 !important;transform:none !important}
+body.снимок .чат_реплика.видна, body.снимок .думает #аян_чат{
+  opacity:1 !important;transform:none !important;animation:none !important}
 
 /* красный регион */
 .улытау_тревога{fill:rgba(255,90,79,.0);stroke:var(--красный);stroke-width:0;
@@ -557,19 +565,6 @@ body.снимок #финал .эффект, body.снимок #финал #ци
       <div class="чат_реплика итог" data-шаг="2"><b>Дефицит предотвращён — до того, как случился</b>
         <span>прозрачное распределение нефтепродуктов</span></div>
     </div>
-    <!-- AIAN живёт слева, за пределами карты, и работает как чат: думает,
-         отвечает, предлагает решение, подводит итог (второе совещание) -->
-    <div id="аян_чат">
-      <div class="чат_шапка"><span class="дисплей град_текст">AIAN</span>
-        <span class="чат_роль">ИИ-ассистент</span></div>
-      <div class="чат_думает"><i></i><i></i><i></i> анализирует данные</div>
-      <div class="чат_реплика" data-шаг="1"><b>Проблемный регион</b>
-        <span>запас ниже порога — дефицит наступит в ближайшие дни</span></div>
-      <div class="чат_реплика" data-шаг="1"><b>Пути решения</b>
-        <span>скорректировать поставки · ускорить отгрузку · перераспределить объёмы</span></div>
-      <div class="чат_реплика итог" data-шаг="2"><b>Дефицит предотвращён — до того, как случился</b>
-        <span>прозрачное распределение нефтепродуктов</span></div>
-    </div>
   </section>
 
   <!-- ТАКТ 4: передача экрана живой системе -->
@@ -700,12 +695,14 @@ const ТАКТЫ = [
                   'на этой основе работает искусственный интеллект', 2600);
         this.таймеры.push(setTimeout(()=>document.getElementById('знак_аян').classList.add('показан'), 3400));
       };
-      if(м && !м.error && м.getAttribute('src')){
+      /* возврат на карту (шаг назад из «живой демонстрации») не должен
+         заново прокручивать мост — зал уже его видел */
+      if(подшаг > 0 || режимСнимка){ пуск(); }
+      else if(м && !м.error && м.getAttribute('src')){
         м.currentTime = 0;
         м.play().then(()=>{ м.onended = пуск; }).catch(пуск);
         this.таймеры.push(setTimeout(пуск, 7000)); // страховка: мост завис
       } else пуск();
-      if(режимСнимка) пуск();
     },
     подшаг(к){
       const с = document.getElementById('карта_центр');
@@ -818,6 +815,10 @@ function показать(н, целиком){
   }
   применитьПодшаг();
   ТАКТЫ[номер].вход && ТАКТЫ[номер].вход();
+  /* источники живут только на видео и на карте: иначе при шаге назад они
+     оставались висеть поверх слайда */
+  if(ТАКТЫ[номер].id !== 'цепочка' && ТАКТЫ[номер].id !== 'карта_центр')
+    сброситьСтопку();
   document.getElementById('подсказка').style.opacity = номер ? 0 : 1;
   обновитьХод();
 }
@@ -884,6 +885,9 @@ function сброситьСтопку(){
    координат карты — так работает на любом разрешении зала. */
 let считатьЯкоря = null;
 function перенестиИсточники(попытка){
+  // повтор мог сработать уже после ухода с карты — тогда не трогаем стопку
+  const наКарте = document.getElementById('карта_центр').classList.contains('активен');
+  if(!наКарте) return;
   const якоряИсточников = считатьЯкоря && считатьЯкоря();
   if(!якоряИсточников){                       // карта ещё не разложена
     if((попытка||0) < 5) setTimeout(()=>перенестиИсточники((попытка||0)+1), 120);
