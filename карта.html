@@ -50,10 +50,6 @@ html,body{width:100%;height:100%;background:var(--фон0);overflow:hidden;
   opacity:0;transition:opacity .4s ease}
 #заставка.думает_идёт .думает{opacity:1}
 #заставка.уводит .думает{opacity:0}
-#подсказка_такта{position:fixed;right:2.5vw;bottom:2.5vh;z-index:21;
-  font-size:clamp(11px,1.4vmin,16px);color:rgba(124,141,166,.55);
-  transition:opacity .5s ease}
-#подсказка_такта.скрыта{opacity:0}
 #заставка .думает i{width:6px;height:6px;border-radius:50%;background:var(--мята);
   animation:точка 1.2s infinite}
 #заставка .думает i:nth-child(2){animation-delay:.2s}
@@ -169,7 +165,6 @@ svg.карта.видна{opacity:1}
   <div class="имя дисплей">KMG.<b class="град_текст">AIAN</b></div>
   <div class="думает"><i></i><i></i><i></i> собирает данные по регионам</div>
 </div>
-<div id="подсказка_такта">нажмите, чтобы продолжить</div>
 
 <header id="шапка">
   <div>
@@ -248,7 +243,6 @@ async function запустить(){
 /* ── Такты заставки ──────────────────────────────────────────────────── */
 function завестиТакты(){
   const заставка = document.getElementById('заставка');
-  const подсказка = document.getElementById('подсказка_такта');
   let такт = 0, занято = false;
   const дальше = ()=>{
     if(занято) return;
@@ -259,7 +253,6 @@ function завестиТакты(){
     }
     if(такт === 1){                       // ещё две секунды раздумья, затем карта
       такт = 2; занято = true;
-      подсказка.classList.add('скрыта');
       setTimeout(()=>{
         заставка.classList.add('уводит');   // логотип уезжает влево
         заставка.classList.add('ушла');
@@ -272,7 +265,6 @@ function завестиТакты(){
   /* ?сразу=1 — открыть карту без заставки (репетиция, проверка кадров) */
   if(параметры.has('сразу')){
     заставка.classList.add('уводит','ушла');
-    подсказка.classList.add('скрыта');
     document.querySelector('svg.карта').classList.add('видна');
     ['шапка','легенда','подвал'].forEach(и=>
       document.getElementById(и).classList.add('видна'));
