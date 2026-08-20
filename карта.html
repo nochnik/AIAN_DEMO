@@ -35,13 +35,25 @@ html,body{width:100%;height:100%;background:var(--фон0);overflow:hidden;
   -webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* ---------- заставка: AIAN думает ---------- */
+/* Два такта: 1 — логотип, 2 — AIAN думает (бесконечно, пока не нажмут);
+   по нажатию думает ещё две секунды, потом логотип уезжает влево,
+   заставка гаснет и открывается карта */
 #заставка{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:2.6vmin;background:var(--фон0);
-  transition:opacity .8s ease}
+  transition:opacity .7s ease .55s;cursor:pointer}
 #заставка.ушла{opacity:0;pointer-events:none}
-#заставка .имя{font-size:clamp(34px,6.4vmin,76px);font-weight:700;letter-spacing:.02em}
+#заставка .имя{font-size:clamp(34px,6.4vmin,76px);font-weight:700;letter-spacing:.02em;
+  transition:transform .9s cubic-bezier(.6,0,.2,1)}
+#заставка.уводит .имя{transform:translate(-31vw,-38vh) scale(.42)}
 #заставка .думает{display:flex;align-items:center;gap:.8vmin;
-  font-size:clamp(13px,2vmin,22px);color:var(--приглуш);letter-spacing:.04em}
+  font-size:clamp(13px,2vmin,22px);color:var(--приглуш);letter-spacing:.04em;
+  opacity:0;transition:opacity .4s ease}
+#заставка.думает_идёт .думает{opacity:1}
+#заставка.уводит .думает{opacity:0}
+#подсказка_такта{position:fixed;right:2.5vw;bottom:2.5vh;z-index:21;
+  font-size:clamp(11px,1.4vmin,16px);color:rgba(124,141,166,.55);
+  transition:opacity .5s ease}
+#подсказка_такта.скрыта{opacity:0}
 #заставка .думает i{width:6px;height:6px;border-radius:50%;background:var(--мята);
   animation:точка 1.2s infinite}
 #заставка .думает i:nth-child(2){animation-delay:.2s}
@@ -51,8 +63,11 @@ html,body{width:100%;height:100%;background:var(--фон0);overflow:hidden;
 /* ---------- шапка и фильтры ---------- */
 #шапка{position:fixed;left:0;right:0;top:0;z-index:6;
   display:flex;align-items:center;gap:2vmin;flex-wrap:wrap;
-  padding:2vmin 3vw 1.6vmin;
+  padding:2vmin 3vw 1.6vmin;opacity:0;transition:opacity .6s ease;
   background:linear-gradient(180deg,rgba(5,8,16,.92),rgba(5,8,16,0))}
+#шапка.видна{opacity:1}
+#легенда,#подвал{opacity:0;transition:opacity .6s ease}
+#легенда.видна,#подвал.видна{opacity:1}
 #шапка .знак{font-size:clamp(16px,2.4vmin,28px);font-weight:700;letter-spacing:.03em}
 #шапка .подзаг{font-size:clamp(11px,1.5vmin,17px);color:var(--приглуш)}
 .фильтр{display:flex;align-items:center;gap:.6vmin;margin-left:auto}
@@ -83,13 +98,13 @@ svg.карта.видна{opacity:1}
 .область.уровень3{fill:rgba(245,215,90,.6);stroke:rgba(250,232,160,.8)}
 .область.уровень4{fill:rgba(62,213,152,.5);stroke:rgba(140,240,195,.78)}
 .рельеф_подложка{opacity:.55}
-.метка_региона{fill:rgba(234,244,255,.92);font-size:11px;font-weight:600;
-  paint-order:stroke;stroke:rgba(5,8,16,.9);stroke-width:3px;pointer-events:none;
-  letter-spacing:.02em}
-.метка_значение{fill:#EAF4FF;font-family:'Unbounded',system-ui,sans-serif;
-  font-size:13px;font-weight:700;paint-order:stroke;stroke:rgba(5,8,16,.92);
-  stroke-width:3.4px;pointer-events:none}
-.метка_региона.город{fill:rgba(200,215,235,.85);font-size:10px}
+/* Подписи крупные и без обводки: тёмный ореол вокруг букв ложился пятнами
+   на заливку и мешал читать сами области (правка заказчика) */
+.метка_региона{fill:#F2F7FF;font-size:17px;font-weight:600;
+  pointer-events:none;letter-spacing:.01em}
+.метка_значение{fill:#FFFFFF;font-family:'Unbounded',system-ui,sans-serif;
+  font-size:26px;font-weight:700;pointer-events:none}
+.метка_региона.город{fill:rgba(226,236,250,.92);font-size:14px}
 
 /* ---------- легенда и подвал ---------- */
 #легенда{position:fixed;left:3vw;bottom:9vh;z-index:5;padding:1.6vmin 2vmin;
@@ -103,8 +118,8 @@ svg.карта.видна{opacity:1}
   font-size:clamp(11px,1.5vmin,17px)}
 #легенда .плитка{width:16px;height:16px;border-radius:4px;flex:0 0 auto}
 
-#подвал{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:1.6vmin 3vw 2vmin;
-  text-align:center;font-size:clamp(10px,1.5vmin,17px);color:var(--приглуш);
+#подвал{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:1.8vmin 3vw 2.2vmin;
+  text-align:center;font-size:clamp(13px,1.9vmin,23px);color:var(--приглуш);
   background:linear-gradient(0deg,rgba(5,8,16,.92),rgba(5,8,16,0))}
 #подвал b{color:var(--текст);font-weight:600}
 #подвал .цепь span{color:var(--мята)}
@@ -126,11 +141,12 @@ svg.карта.видна{opacity:1}
 </head>
 <body>
 
-<!-- Заставка: сначала AIAN «думает», потом открывается карта -->
+<!-- Заставка: логотип → «думает» → уход влево и карта -->
 <div id="заставка">
   <div class="имя дисплей">KMG.<b class="град_текст">AIAN</b></div>
   <div class="думает"><i></i><i></i><i></i> собирает данные по регионам</div>
 </div>
+<div id="подсказка_такта">нажмите, чтобы продолжить</div>
 
 <header id="шапка">
   <div>
@@ -168,9 +184,9 @@ const ПОКАЗАТЕЛИ = {
   'дни':   { имя:'Дни запаса',  единица:'сут', ярлык:'Обеспеченность, суток',
              пороги:[4,8,14], абсолютные:true },
   'объём': { имя:'Объём',       единица:'тыс. т', ярлык:'Запас, тыс. тонн',
-             абсолютные:false },
-  'азс':   { имя:'АЗС',         единица:'шт', ярлык:'Число АЗС',
              абсолютные:false }
+  /* фильтр «АЗС» снят по правке заказчика: карта показывает запас,
+     а число заправок к обеспеченности напрямую не относится */
 };
 
 let ДАННЫЕ = null, ОБЛАСТИ = null;
@@ -199,11 +215,46 @@ async function запустить(){
   собратьФильтры();
   построитьКарту();
   перекрасить();
-  // карта появляется после «раздумья» ассистента
-  setTimeout(()=>{
-    document.getElementById('заставка').classList.add('ушла');
+  завестиТакты();
+}
+
+/* ── Такты заставки ──────────────────────────────────────────────────── */
+function завестиТакты(){
+  const заставка = document.getElementById('заставка');
+  const подсказка = document.getElementById('подсказка_такта');
+  let такт = 0, занято = false;
+  const дальше = ()=>{
+    if(занято) return;
+    if(такт === 0){                       // логотип → бесконечное «думает»
+      такт = 1;
+      заставка.classList.add('думает_идёт');
+      return;
+    }
+    if(такт === 1){                       // ещё две секунды раздумья, затем карта
+      такт = 2; занято = true;
+      подсказка.classList.add('скрыта');
+      setTimeout(()=>{
+        заставка.classList.add('уводит');   // логотип уезжает влево
+        заставка.classList.add('ушла');
+        document.querySelector('svg.карта').classList.add('видна');
+        ['шапка','легенда','подвал'].forEach(и=>
+          document.getElementById(и).classList.add('видна'));
+      }, 2000);
+    }
+  };
+  /* ?сразу=1 — открыть карту без заставки (репетиция, проверка кадров) */
+  if(параметры.has('сразу')){
+    заставка.classList.add('уводит','ушла');
+    подсказка.classList.add('скрыта');
     document.querySelector('svg.карта').classList.add('видна');
-  }, 1500);
+    ['шапка','легенда','подвал'].forEach(и=>
+      document.getElementById(и).classList.add('видна'));
+    такт = 2; занято = true;
+  }
+  addEventListener('click', дальше);
+  addEventListener('keydown', е=>{
+    if(е.key==='ArrowRight'||е.key===' '||е.key==='PageDown'){ е.preventDefault(); дальше(); }
+  });
 }
 
 /* ── Фильтры ─────────────────────────────────────────────────────────── */
@@ -281,7 +332,7 @@ function построитьКарту(){
   // подписи: имя области и значение показателя
   /* города-миллионники — крошечные полигоны внутри областей: их подписи
      сдвигаем, иначе они наезжают на название области */
-  const СДВИГ_ГОРОДОВ = { astana:[46,-26], almaty:[-40,26], shymkent:[-46,20] };
+  const СДВИГ_ГОРОДОВ = { astana:[64,-36], almaty:[-64,40], shymkent:[-70,34] };
   for(const [ключ,о] of Object.entries(ОБЛАСТИ)){
     const кольцо = о.кольца[0];
     let сх=0, су=0;
@@ -372,8 +423,7 @@ function показатьШар(е, ключ, имя){
   const д = р[топливо] || {};
   шар.querySelector('b').textContent = имя;
   шар.querySelector('.строка').innerHTML =
-    `${топливо}: <i>${д['дни'] ?? '—'}</i> сут · <i>${д['объём'] ?? '—'}</i> тыс. т · ` +
-    `<i>${д['азс'] ?? '—'}</i> АЗС`;
+    `${топливо}: <i>${д['дни'] ?? '—'}</i> сут · <i>${д['объём'] ?? '—'}</i> тыс. т`;
   шар.classList.add('виден');
   const сдвиг = 18;
   шар.style.left = Math.min(е.clientX + сдвиг, innerWidth - шар.offsetWidth - 12) + 'px';
