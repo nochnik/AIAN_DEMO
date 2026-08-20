@@ -139,6 +139,15 @@ body.снимок .тезис{transition:none !important}
   color:var(--приглуш)}
 .мод_блок{font-size:clamp(16px,2.5vmin,29px);font-weight:600;margin:.9vmin 0 1.4vmin;
   line-height:1.2}
+/* на карте — три блока цепочки, у каждого свои системы под названием */
+.мод_группа{margin-top:1.4vmin;opacity:0;transform:translateY(8px);
+  transition:all .6s ease}
+.модалка_систем.видна .мод_группа{opacity:1;transform:none}
+.модалка_систем.видна .мод_группа:nth-of-type(2){transition-delay:.35s}
+.модалка_систем.видна .мод_группа:nth-of-type(3){transition-delay:.7s}
+.мод_группа b{display:block;font-size:clamp(13px,1.9vmin,22px);font-weight:600;
+  margin-bottom:.8vmin}
+body.снимок .мод_группа{transition:none !important;opacity:1 !important;transform:none !important}
 .мод_список{display:flex;flex-wrap:wrap;gap:.9vmin}
 .мод_список span{display:inline-flex;align-items:center;gap:.7vmin;
   padding:.7vmin 1.4vmin;border-radius:8px;
@@ -197,11 +206,6 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
 .линии_пошли .линия_данных{animation:протяжка 2.2s ease forwards}
 @keyframes протяжка{to{stroke-dashoffset:0}}
 .точка_объекта{fill:var(--янтарь);filter:drop-shadow(0 0 8px var(--янтарь))}
-.метка_истока{fill:var(--мята);font-family:'Unbounded',system-ui,sans-serif;
-  font-size:12px;font-weight:500;letter-spacing:.12em;opacity:0;
-  transition:opacity .9s ease;paint-order:stroke;stroke:rgba(5,8,16,.85);stroke-width:3px}
-.линии_пошли .метка_истока{opacity:.95}
-body.снимок .метка_истока{transition:none !important;opacity:.95 !important}
 #астана_свет{fill:var(--циан);filter:drop-shadow(0 0 30px var(--циан));opacity:0}
 .линии_пошли #астана_свет{animation:вспышка 1.4s ease 2.2s forwards}
 .астана_метка{fill:var(--текст);font-family:'Unbounded',system-ui,sans-serif;
@@ -487,11 +491,12 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     <!-- модалка внизу справа: у Астаны сходятся линии, там её ставить нельзя -->
     <div class="модалка_систем" id="модалка_карты" style="right:4vw;top:auto;bottom:17%">
       <div class="мод_ярлык">Источники данных</div>
-      <div class="мод_блок">Вся цепочка — в одном контуре</div>
-      <div class="мод_список">
-        <span>МЭ</span><span>ЦД</span><span>НПЗ</span>
-        <span>КТО</span><span>КТЖ</span><span>КГД</span>
-      </div>
+      <div class="мод_группа"><b>Добыча</b>
+        <div class="мод_список"><span>МЭ</span><span>ЦД</span></div></div>
+      <div class="мод_группа"><b>Транспортировка и переработка</b>
+        <div class="мод_список"><span>МЭ</span><span>НПЗ</span><span>КТО</span></div></div>
+      <div class="мод_группа"><b>Оборот НП</b>
+        <div class="мод_список"><span>МЭ</span><span>КТЖ</span><span>КГД</span></div></div>
     </div>
   </section>
 
@@ -967,13 +972,10 @@ async function построитьКарты(){
     т.setAttribute('cx',x1); т.setAttribute('cy',y1); т.setAttribute('r',5);
     т.classList.add('точка_объекта');
     с2.appendChild(т);
-    const ярлык = свг('text');
-    ярлык.setAttribute('x', x1); ярлык.setAttribute('y', y1 + (сторона<0 ? 20 : -12));
-    ярлык.setAttribute('text-anchor','middle');
-    ярлык.classList.add('метка_истока');
-    ярлык.textContent = система;
-    ярлык.style.transitionDelay = (0.6 + Math.random()*0.8)+'s';
-    с2.appendChild(ярлык);
+    /* подписи систем у точек отклонены заказчиком: читались так, будто
+       в каждой области свой источник. Системы называет модалка —
+       они общенациональные, а не региональные. Коды оставлены в данных:
+       по ним видно, что за объект стоит в точке. */
   }
   const свет = свг('circle');
   свет.setAttribute('cx',АСТАНА[0]); свет.setAttribute('cy',АСТАНА[1]);
