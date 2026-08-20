@@ -411,6 +411,12 @@ body.снимок .чат_реплика.видна, body.снимок .дума
 /* ---------- финал ---------- */
 #финал .центр{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:44px}
+#финал_знак{font-size:clamp(26px,4.4vmin,52px);font-weight:700;letter-spacing:.02em;
+  text-shadow:0 0 46px rgba(79,227,255,.28);
+  opacity:0;transform:translateY(10px);transition:all .7s ease}
+#финал_знак .град_текст{color:transparent;text-shadow:none}
+#финал.активен #финал_знак{opacity:1;transform:none}
+body.снимок #финал_знак{transition:none !important;opacity:1 !important;transform:none !important}
 /* три карточки в один ряд: с двумя рядами сетка выглядела недособранной */
 #эффекты{display:grid;grid-template-columns:repeat(3,min(28vw,420px));gap:2vmin}
 .эффект{padding:2.4vmin 3vmin;display:flex;flex-direction:column;align-items:center;
@@ -603,6 +609,8 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.5)"></div>
     <div class="виньетка" style="background:radial-gradient(ellipse at center,rgba(0,0,0,.45) 0%,rgba(0,0,0,.8) 100%)"></div>
     <div class="центр">
+      <!-- знак системы, как на титуле и на карте: финал замыкает рамку -->
+      <div id="финал_знак" class="дисплей">KMG.<b class="град_текст">AIAN</b></div>
       <div id="эффекты">
         <div class="эффект">
           <svg viewBox="0 0 24 24"><path d="M2 12C5 6.2 19 6.2 22 12C19 17.8 5 17.8 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
