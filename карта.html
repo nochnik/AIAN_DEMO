@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMG.AIAN — карта обеспеченности</title>
+<style>
+/* Отдельная страница показа: карта запасов с фильтрами. Ссылок на интро
+   здесь нет намеренно — со страницы нельзя попасть на главный экран. */
+@font-face{font-family:'Unbounded';font-weight:500 700;font-display:swap;
+  src:url('медиа/шрифты/унб_500_cyrillic.woff2') format('woff2');
+  unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Unbounded';font-weight:500 700;font-display:swap;
+  src:url('медиа/шрифты/унб_500_latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:'Golos Text';font-weight:400 600;font-display:swap;
+  src:url('медиа/шрифты/голос_400_cyrillic.woff2') format('woff2');
+  unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Golos Text';font-weight:400 600;font-display:swap;
+  src:url('медиа/шрифты/голос_400_latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+2000-206F}
+
+:root{
+  --циан:#4FE3FF; --мята:#3EE6B8; --янтарь:#F0AE4A;
+  --красный:#FF5A4F; --оранжевый:#FF9A3C; --жёлтый:#F0D24A; --зелёный:#3ED598;
+  --фон0:#050810; --текст:#D7E2F2; --приглуш:#7C8DA6;
+  --стекло:linear-gradient(165deg,rgba(14,28,46,.94),rgba(6,12,24,.9));
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:var(--фон0);overflow:hidden;
+  font-family:'Golos Text',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:var(--текст)}
+.дисплей{font-family:'Unbounded',system-ui,sans-serif}
+.град_текст{background:linear-gradient(100deg,#BFF2FF 4%,var(--циан) 38%,var(--мята) 92%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- заставка: AIAN думает ---------- */
+#заставка{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2.6vmin;background:var(--фон0);
+  transition:opacity .8s ease}
+#заставка.ушла{opacity:0;pointer-events:none}
+#заставка .имя{font-size:clamp(34px,6.4vmin,76px);font-weight:700;letter-spacing:.02em}
+#заставка .думает{display:flex;align-items:center;gap:.8vmin;
+  font-size:clamp(13px,2vmin,22px);color:var(--приглуш);letter-spacing:.04em}
+#заставка .думает i{width:6px;height:6px;border-radius:50%;background:var(--мята);
+  animation:точка 1.2s infinite}
+#заставка .думает i:nth-child(2){animation-delay:.2s}
+#заставка .думает i:nth-child(3){animation-delay:.4s}
+@keyframes точка{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+/* ---------- шапка и фильтры ---------- */
+#шапка{position:fixed;left:0;right:0;top:0;z-index:6;
+  display:flex;align-items:center;gap:2vmin;flex-wrap:wrap;
+  padding:2vmin 3vw 1.6vmin;
+  background:linear-gradient(180deg,rgba(5,8,16,.92),rgba(5,8,16,0))}
+#шапка .знак{font-size:clamp(16px,2.4vmin,28px);font-weight:700;letter-spacing:.03em}
+#шапка .подзаг{font-size:clamp(11px,1.5vmin,17px);color:var(--приглуш)}
+.фильтр{display:flex;align-items:center;gap:.6vmin;margin-left:auto}
+.фильтр:first-of-type{margin-left:2vw}
+.фильтр .ярлык{font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
+  font-size:clamp(9px,1.2vmin,13px);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--приглуш);margin-right:.6vmin}
+.кнопка{padding:.9vmin 1.8vmin;border-radius:9px;background:var(--стекло);
+  border:1px solid rgba(79,227,255,.28);border-top-color:rgba(215,226,242,.14);
+  font-size:clamp(12px,1.7vmin,19px);color:var(--приглуш);cursor:pointer;
+  transition:all .25s ease;font-family:inherit}
+.кнопка:hover{color:var(--текст);border-color:rgba(79,227,255,.5)}
+.кнопка.выбрана{color:#EAF4FF;border-color:var(--циан);
+  background:linear-gradient(165deg,rgba(20,44,68,.96),rgba(8,16,30,.92));
+  box-shadow:0 0 20px rgba(79,227,255,.22)}
+.кнопка:focus-visible{outline:2px solid var(--циан);outline-offset:2px}
+
+/* ---------- карта ---------- */
+#поле{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+svg.карта{width:min(80vw,132vh);height:auto;opacity:0;transition:opacity .9s ease}
+svg.карта.видна{opacity:1}
+.область{fill:rgba(16,34,52,.5);stroke:rgba(79,227,255,.45);stroke-width:1.1;
+  transition:fill .7s ease,stroke .7s ease;cursor:pointer}
+.область:hover{stroke:#EAF4FF;stroke-width:2}
+.область.уровень1{fill:rgba(255,90,79,.66);stroke:rgba(255,150,140,.85)}
+.область.уровень2{fill:rgba(255,154,60,.62);stroke:rgba(255,195,140,.8)}
+/* жёлтый поднят по насыщенности: поверх тёмного рельефа он уходил в хаки */
+.область.уровень3{fill:rgba(245,215,90,.6);stroke:rgba(250,232,160,.8)}
+.область.уровень4{fill:rgba(62,213,152,.5);stroke:rgba(140,240,195,.78)}
+.рельеф_подложка{opacity:.55}
+.метка_региона{fill:rgba(234,244,255,.92);font-size:11px;font-weight:600;
+  paint-order:stroke;stroke:rgba(5,8,16,.9);stroke-width:3px;pointer-events:none;
+  letter-spacing:.02em}
+.метка_значение{fill:#EAF4FF;font-family:'Unbounded',system-ui,sans-serif;
+  font-size:13px;font-weight:700;paint-order:stroke;stroke:rgba(5,8,16,.92);
+  stroke-width:3.4px;pointer-events:none}
+.метка_региона.город{fill:rgba(200,215,235,.85);font-size:10px}
+
+/* ---------- легенда и подвал ---------- */
+#легенда{position:fixed;left:3vw;bottom:9vh;z-index:5;padding:1.6vmin 2vmin;
+  border-radius:14px;background:var(--стекло);
+  border:1px solid rgba(79,227,255,.3);border-top-color:rgba(215,226,242,.16);
+  box-shadow:0 12px 40px rgba(0,0,0,.5)}
+#легенда .ярлык{font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
+  font-size:clamp(9px,1.2vmin,13px);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--приглуш);margin-bottom:1.2vmin}
+#легенда .ряд{display:flex;align-items:center;gap:1vmin;margin-top:.7vmin;
+  font-size:clamp(11px,1.5vmin,17px)}
+#легенда .плитка{width:16px;height:16px;border-radius:4px;flex:0 0 auto}
+
+#подвал{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:1.6vmin 3vw 2vmin;
+  text-align:center;font-size:clamp(10px,1.5vmin,17px);color:var(--приглуш);
+  background:linear-gradient(0deg,rgba(5,8,16,.92),rgba(5,8,16,0))}
+#подвал b{color:var(--текст);font-weight:600}
+#подвал .цепь span{color:var(--мята)}
+
+/* ---------- подсказка при наведении ---------- */
+#шар{position:fixed;z-index:9;padding:1.2vmin 1.6vmin;border-radius:10px;
+  background:var(--стекло);border:1px solid rgba(79,227,255,.4);
+  box-shadow:0 10px 30px rgba(0,0,0,.6);pointer-events:none;opacity:0;
+  transition:opacity .2s ease}
+#шар.виден{opacity:1}
+#шар b{display:block;font-size:clamp(12px,1.7vmin,20px);margin-bottom:.5vmin}
+#шар .строка{font-size:clamp(10px,1.4vmin,16px);color:var(--приглуш)}
+#шар .строка i{font-style:normal;color:#EAF4FF}
+
+@media (prefers-reduced-motion: reduce){
+  #заставка .думает i{animation:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Заставка: сначала AIAN «думает», потом открывается карта -->
+<div id="заставка">
+  <div class="имя дисплей">KMG.<b class="град_текст">AIAN</b></div>
+  <div class="думает"><i></i><i></i><i></i> собирает данные по регионам</div>
+</div>
+
+<header id="шапка">
+  <div>
+    <div class="знак дисплей">KMG.<b class="град_текст">AIAN</b></div>
+    <div class="подзаг">обеспеченность регионов нефтепродуктами</div>
+  </div>
+  <div class="фильтр" id="фильтр_топливо"><span class="ярлык">Топливо</span></div>
+  <div class="фильтр" id="фильтр_показатель"><span class="ярлык">Показатель</span></div>
+</header>
+
+<div id="поле"></div>
+
+<div id="легенда">
+  <div class="ярлык" id="легенда_ярлык">Обеспеченность</div>
+  <div id="легенда_ряды"></div>
+</div>
+
+<footer id="подвал">
+  Теплота карты зависит от данных:
+  <span class="цепь">НПЗ <span>→</span> КТЖ <span>→</span> импорт / экспорт <span>→</span>
+  нефтебазы и нефтехранилища <span>→</span> АЗС</span>
+</footer>
+
+<div id="шар"><b></b><div class="строка"></div></div>
+
+<script>
+"use strict";
+
+/* ── Пороговая логика ────────────────────────────────────────────────────
+   Для дней пороги заданы заказчиком: 0–4 красный, 5–8 оранжевый,
+   9–14 жёлтый, дальше зелёный. Для объёма и числа АЗС абсолютных порогов
+   нет, поэтому шкала относительная — по квартилям текущей выборки:
+   меньшая четверть красная, дальше оранжевый, жёлтый, зелёный. */
+const ПОКАЗАТЕЛИ = {
+  'дни':   { имя:'Дни запаса',  единица:'сут', ярлык:'Обеспеченность, суток',
+             пороги:[4,8,14], абсолютные:true },
+  'объём': { имя:'Объём',       единица:'тыс. т', ярлык:'Запас, тыс. тонн',
+             абсолютные:false },
+  'азс':   { имя:'АЗС',         единица:'шт', ярлык:'Число АЗС',
+             абсолютные:false }
+};
+
+let ДАННЫЕ = null, ОБЛАСТИ = null;
+/* Состояние можно задать ссылкой: ?топливо=ДТ&показатель=объём —
+   удобно для репетиции и для покадровой проверки */
+const параметры = new URLSearchParams(location.search);
+let топливо = параметры.get('топливо') || 'АИ-92';
+let показатель = параметры.get('показатель') || 'дни';
+
+/* ── Проекция карты (та же, что в интро) ──────────────────────────────── */
+const КОС = Math.cos(48*Math.PI/180);
+let ПРОЕКЦИЯ = null;
+function проецируй(лон, лат){
+  const {х0,у0,к} = ПРОЕКЦИЯ;
+  return [ (лон-х0)*КОС*к, (у0-лат)*к ];
+}
+
+const НС = 'http://www.w3.org/2000/svg';
+const свг = имя => document.createElementNS(НС, имя);
+
+async function запустить(){
+  [ОБЛАСТИ, ДАННЫЕ] = await Promise.all([
+    fetch('данные/области_кз.json').then(о=>о.json()),
+    fetch('данные/запасы.json').then(о=>о.json())
+  ]);
+  собратьФильтры();
+  построитьКарту();
+  перекрасить();
+  // карта появляется после «раздумья» ассистента
+  setTimeout(()=>{
+    document.getElementById('заставка').classList.add('ушла');
+    document.querySelector('svg.карта').classList.add('видна');
+  }, 1500);
+}
+
+/* ── Фильтры ─────────────────────────────────────────────────────────── */
+function кнопка(текст, выбрана, действие){
+  const б = document.createElement('button');
+  б.className = 'кнопка' + (выбрана ? ' выбрана' : '');
+  б.textContent = текст;
+  б.onclick = действие;
+  return б;
+}
+function собратьФильтры(){
+  const т = document.getElementById('фильтр_топливо');
+  ДАННЫЕ.топливо.forEach(вид=>{
+    т.appendChild(кнопка(вид, вид===топливо, ()=>{ топливо = вид; собратьФильтры(); перекрасить(); }));
+  });
+  const п = document.getElementById('фильтр_показатель');
+  Object.entries(ПОКАЗАТЕЛИ).forEach(([ключ,оп])=>{
+    п.appendChild(кнопка(оп.имя, ключ===показатель, ()=>{ показатель = ключ; собратьФильтры(); перекрасить(); }));
+  });
+  // старые кнопки убираем, ярлык оставляем
+  [т,п].forEach(узел=>{
+    const кнопки = [...узел.querySelectorAll('.кнопка')];
+    const лишние = кнопки.length - (узел===т ? ДАННЫЕ.топливо.length : Object.keys(ПОКАЗАТЕЛИ).length);
+    for(let и=0;и<лишние;и++) кнопки[и].remove();
+  });
+}
+
+/* ── Карта ───────────────────────────────────────────────────────────── */
+function построитьКарту(){
+  let минЛон=999,максЛон=-999,минЛат=999,максЛат=-999;
+  for(const о of Object.values(ОБЛАСТИ)) for(const кольцо of о.кольца)
+    for(const [лон,лат] of кольцо){
+      минЛон=Math.min(минЛон,лон); максЛон=Math.max(максЛон,лон);
+      минЛат=Math.min(минЛат,лат); максЛат=Math.max(максЛат,лат);
+    }
+  const Ш=1500, В=830;
+  const к = Math.min(Ш/((максЛон-минЛон)*КОС), В/(максЛат-минЛат));
+  ПРОЕКЦИЯ = {х0:минЛон, у0:максЛат, к};
+  const шир=(максЛон-минЛон)*КОС*к, выс=(максЛат-минЛат)*к;
+
+  const путь = о => о.кольца.map(кольцо =>
+    'M'+кольцо.map(п=>проецируй(п[0],п[1]).map(ч=>ч.toFixed(1)).join(',')).join('L')+'Z'
+  ).join(' ');
+
+  const s = свг('svg');
+  s.setAttribute('viewBox', `0 0 ${шир} ${выс}`);
+  s.classList.add('карта');
+
+  // рельеф из интро, обрезанный точным контуром страны
+  const дефы = свг('defs'), обрезка = свг('clipPath');
+  обрезка.id = 'контур_страны';
+  for(const о of Object.values(ОБЛАСТИ)){
+    const п = свг('path'); п.setAttribute('d', путь(о)); обрезка.appendChild(п);
+  }
+  дефы.appendChild(обрезка); s.appendChild(дефы);
+  const рельеф = свг('image');
+  рельеф.setAttribute('href','медиа/рельеф.jpg');
+  рельеф.setAttribute('x',-40); рельеф.setAttribute('y',-40);
+  рельеф.setAttribute('width',шир+80); рельеф.setAttribute('height',выс+80);
+  рельеф.setAttribute('preserveAspectRatio','xMidYMid slice');
+  рельеф.setAttribute('clip-path','url(#контур_страны)');
+  рельеф.classList.add('рельеф_подложка');
+  s.appendChild(рельеф);
+
+  for(const [ключ,о] of Object.entries(ОБЛАСТИ)){
+    const p = свг('path');
+    p.setAttribute('d', путь(о));
+    p.classList.add('область');
+    p.dataset.ключ = ключ;
+    p.addEventListener('mousemove', е=>показатьШар(е, ключ, о.имя));
+    p.addEventListener('mouseleave', спрятатьШар);
+    s.appendChild(p);
+  }
+
+  // подписи: имя области и значение показателя
+  /* города-миллионники — крошечные полигоны внутри областей: их подписи
+     сдвигаем, иначе они наезжают на название области */
+  const СДВИГ_ГОРОДОВ = { astana:[46,-26], almaty:[-40,26], shymkent:[-46,20] };
+  for(const [ключ,о] of Object.entries(ОБЛАСТИ)){
+    const кольцо = о.кольца[0];
+    let сх=0, су=0;
+    for(const [лон,лат] of кольцо){ const [x,y]=проецируй(лон,лат); сх+=x; су+=y; }
+    сх/=кольцо.length; су/=кольцо.length;
+    const сдвиг = СДВИГ_ГОРОДОВ[ключ];
+    if(сдвиг){ сх += сдвиг[0]; су += сдвиг[1]; }
+    const имя = свг('text');
+    имя.setAttribute('x',сх); имя.setAttribute('y',су-6);
+    if(сдвиг) имя.classList.add('город');
+    имя.setAttribute('text-anchor','middle');
+    имя.classList.add('метка_региона');
+    имя.textContent = коротко(о.имя);
+    s.appendChild(имя);
+    const знач = свг('text');
+    знач.setAttribute('x',сх); знач.setAttribute('y',су+12);
+    знач.setAttribute('text-anchor','middle');
+    знач.classList.add('метка_значение');
+    знач.dataset.ключ = ключ;
+    s.appendChild(знач);
+  }
+  document.getElementById('поле').appendChild(s);
+}
+
+/* Города-точки и длинные названия сокращаем, иначе подписи налезают */
+function коротко(имя){
+  return имя
+    .replace('Западно-Казахстанская область','ЗКО')
+    .replace('Восточно-Казахстанская область','ВКО')
+    .replace('Северо-Казахстанская область','СКО')
+    .replace(' область','');
+}
+
+/* ── Раскраска ───────────────────────────────────────────────────────── */
+function значение(ключ){
+  const р = ДАННЫЕ.регионы[ключ];
+  return р && р[топливо] ? р[топливо][показатель] : null;
+}
+function уровни(){
+  const оп = ПОКАЗАТЕЛИ[показатель];
+  if(оп.абсолютные) return оп.пороги;
+  // относительная шкала: квартили текущей выборки
+  const ряд = Object.keys(ДАННЫЕ.регионы).map(значение)
+    .filter(з=>з!==null && з!==undefined).sort((а,б)=>а-б);
+  const кв = д => ряд[Math.floor(ряд.length*д)] ?? 0;
+  return [кв(.25), кв(.5), кв(.75)];
+}
+function уровень(з, пороги){
+  if(з === null || з === undefined) return 0;
+  if(з <= пороги[0]) return 1;   // критично
+  if(з <= пороги[1]) return 2;   // внимание
+  if(з <= пороги[2]) return 3;   // норма с запасом
+  return 4;                       // уверенный запас
+}
+function перекрасить(){
+  const пороги = уровни();
+  const оп = ПОКАЗАТЕЛИ[показатель];
+  document.querySelectorAll('.область').forEach(п=>{
+    const у = уровень(значение(п.dataset.ключ), пороги);
+    п.classList.remove('уровень1','уровень2','уровень3','уровень4');
+    if(у) п.classList.add('уровень'+у);
+  });
+  document.querySelectorAll('.метка_значение').forEach(т=>{
+    const з = значение(т.dataset.ключ);
+    т.textContent = з === null || з === undefined ? '—'
+      : (показатель === 'объём' ? з.toFixed(1) : з);
+  });
+  обновитьЛегенду(пороги, оп);
+}
+function обновитьЛегенду(пороги, оп){
+  document.getElementById('легенда_ярлык').textContent = оп.ярлык;
+  const цвета = ['var(--красный)','var(--оранжевый)','var(--жёлтый)','var(--зелёный)'];
+  const подписи = оп.абсолютные
+    ? [`0–${пороги[0]} ${оп.единица}`, `${пороги[0]+1}–${пороги[1]} ${оп.единица}`,
+       `${пороги[1]+1}–${пороги[2]} ${оп.единица}`, `больше ${пороги[2]} ${оп.единица}`]
+    : [`до ${пороги[0]}`, `${пороги[0]}–${пороги[1]}`,
+       `${пороги[1]}–${пороги[2]}`, `больше ${пороги[2]}`];
+  document.getElementById('легенда_ряды').innerHTML = подписи.map((т,и)=>
+    `<div class="ряд"><span class="плитка" style="background:${цвета[и]}"></span>${т}</div>`
+  ).join('');
+}
+
+/* ── Подсказка ───────────────────────────────────────────────────────── */
+const шар = document.getElementById('шар');
+function показатьШар(е, ключ, имя){
+  const р = ДАННЫЕ.регионы[ключ];
+  if(!р){ return; }
+  const д = р[топливо] || {};
+  шар.querySelector('b').textContent = имя;
+  шар.querySelector('.строка').innerHTML =
+    `${топливо}: <i>${д['дни'] ?? '—'}</i> сут · <i>${д['объём'] ?? '—'}</i> тыс. т · ` +
+    `<i>${д['азс'] ?? '—'}</i> АЗС`;
+  шар.classList.add('виден');
+  const сдвиг = 18;
+  шар.style.left = Math.min(е.clientX + сдвиг, innerWidth - шар.offsetWidth - 12) + 'px';
+  шар.style.top  = Math.min(е.clientY + сдвиг, innerHeight - шар.offsetHeight - 12) + 'px';
+}
+function спрятатьШар(){ шар.classList.remove('виден'); }
+
+запустить();
+</script>
+</body>
+</html>
