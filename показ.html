@@ -68,9 +68,11 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   text-shadow:0 2px 18px rgba(0,0,0,.95)} /* ложится на яркую полосу потока */
 
 /* ---------- зачем (тезисы для государства) ---------- */
+/* заголовок слайда — само имя системы (правка второго совещания) */
 #зачем_заголовок{font-family:'Unbounded',system-ui,sans-serif;
-  font-size:clamp(14px,2.4vmin,30px);font-weight:500;color:var(--приглуш);
-  letter-spacing:.24em;text-transform:uppercase;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+  font-size:clamp(26px,4.6vmin,54px);font-weight:700;letter-spacing:.02em;
+  text-shadow:0 2px 16px rgba(0,0,0,.9)}
+#зачем_заголовок .град_текст{color:transparent;text-shadow:none}
 .тезисы{display:flex;flex-direction:column;gap:2.4vmin;align-items:stretch}
 .тезис{display:flex;align-items:center;gap:2.4vmin;
   font-size:clamp(20px,3.7vmin,44px);font-weight:600;letter-spacing:.01em;
@@ -85,11 +87,12 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
 .тезис svg{width:clamp(28px,4.4vmin,48px);height:clamp(28px,4.4vmin,48px);flex:0 0 auto;
   fill:none;stroke:var(--мята);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
   filter:drop-shadow(0 0 10px rgba(62,230,184,.5))}
-/* слайд «вызов → цель → путь»: ярлык дисплеем, суть с подстрокой */
+/* слайд: вместо ярлыков «Вызов · Цель · Путь» — номера 1-2-3 */
 #вызов_цель_путь .тезис{align-items:center}
-#вызов_цель_путь .ярлык{font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
-  font-size:clamp(12px,1.9vmin,22px);letter-spacing:.2em;text-transform:uppercase;
-  color:var(--циан);flex:0 0 clamp(90px,11vmin,150px)}
+#вызов_цель_путь .номер{font-family:'Unbounded',system-ui,sans-serif;font-weight:700;
+  font-size:clamp(22px,3.6vmin,42px);color:var(--циан);
+  flex:0 0 clamp(46px,5.6vmin,72px);text-align:center;
+  text-shadow:0 0 22px rgba(79,227,255,.45)}
 #вызов_цель_путь .суть{font-size:clamp(18px,3vmin,36px);line-height:1.3}
 #вызов_цель_путь .суть i{display:block;font-style:normal;font-weight:400;
   font-size:clamp(12px,2vmin,23px);color:var(--приглуш);margin-top:.5vmin}
@@ -134,6 +137,31 @@ body.снимок .тезис{transition:none !important}
   opacity:0;transform:translateY(12px) scale(.98);
   transition:opacity .5s ease,transform .5s ease;pointer-events:none}
 .модалка_систем.видна{opacity:1;transform:none}
+
+/* стопка источников над видео: карточки накапливаются сверху вниз */
+#стопка_источников{position:absolute;right:5vw;top:17%;z-index:5;
+  display:flex;flex-direction:column;gap:1.2vmin;align-items:stretch;
+  width:clamp(240px,24vw,380px);
+  transition:transform .9s ease,opacity .9s ease;pointer-events:none}
+#стопка_источников.уехала{transform:translateX(34vw);opacity:0}
+/* ярлык ложится на светлое небо кадра — держим контраст тенью */
+#стопка_источников > .мод_ярлык{opacity:0;transition:opacity .5s ease;
+  color:rgba(215,226,242,.92);text-shadow:0 2px 14px rgba(0,0,0,.95);
+  padding-left:.4vmin;margin-bottom:.4vmin}
+#стопка_источников.начата > .мод_ярлык{opacity:1}
+.мод_карта{padding:1.6vmin 2vmin;border-radius:14px;
+  background:linear-gradient(165deg,rgba(14,28,46,.94),rgba(6,12,24,.9));
+  border:1px solid rgba(79,227,255,.36);border-top-color:rgba(215,226,242,.18);
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+  opacity:0;transform:translateY(12px) scale(.98);
+  transition:opacity .5s ease,transform .5s ease}
+.мод_карта.видна{opacity:1;transform:none}
+.мод_карта b{display:block;font-size:clamp(14px,2.1vmin,25px);font-weight:600;
+  margin-bottom:1vmin;line-height:1.2}
+.мод_карта i{display:block;font-style:normal;margin-top:1vmin;
+  font-size:clamp(10px,1.4vmin,16px);color:var(--приглуш)}
+body.снимок .мод_карта, body.снимок #стопка_источников > .мод_ярлык{
+  transition:none !important;opacity:1 !important;transform:none !important}
 .мод_ярлык{font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
   font-size:clamp(10px,1.4vmin,16px);letter-spacing:.2em;text-transform:uppercase;
   color:var(--приглуш)}
@@ -156,7 +184,10 @@ body.снимок .мод_группа{transition:none !important;opacity:1 !imp
   font-size:clamp(11px,1.7vmin,20px);letter-spacing:.08em;color:var(--мята)}
 .мод_список span::before{content:'';width:6px;height:6px;border-radius:50%;
   background:var(--мята);box-shadow:0 0 8px var(--мята)}
-body.снимок .модалка_систем{transition:none !important;opacity:1;transform:none}
+/* в снимках модалка показывается только когда она реально открыта —
+   иначе кадр врёт про состояние такта */
+body.снимок .модалка_систем{transition:none !important}
+body.снимок .модалка_систем.видна{opacity:1;transform:none}
 .стрелка_этап{color:rgba(124,141,166,.5);font-size:22px}
 /* цифровые метки над видео: физический мир на глазах становится данными
    (обещание раскадровки такта 2) */
@@ -225,6 +256,41 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
 #знак_аян b{color:var(--циан)}
 .такт.активен #знак_аян.показан{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
+/* узел «AIAN думает» слева от Астаны: линия вытягивается, знак пульсирует */
+.линия_думы{fill:none;stroke:rgba(62,230,184,.75);stroke-width:2;stroke-linecap:round;
+  filter:drop-shadow(0 0 8px rgba(62,230,184,.7));
+  stroke-dasharray:var(--длина);stroke-dashoffset:var(--длина)}
+.думает .линия_думы{animation:протяжка .9s ease forwards}
+.узел_думы{fill:var(--мята);opacity:0;transition:opacity .5s ease .6s;
+  filter:drop-shadow(0 0 14px rgba(62,230,184,.9))}
+.думает .узел_думы{opacity:1;animation:дума_пульс 1.5s ease-in-out infinite .9s}
+@keyframes дума_пульс{0%,100%{r:8}50%{r:13}}
+.метка_думы{fill:var(--мята);font-family:'Unbounded',system-ui,sans-serif;
+  font-size:15px;font-weight:700;letter-spacing:.14em;opacity:0;
+  transition:opacity .6s ease .8s;paint-order:stroke;
+  stroke:rgba(5,8,16,.9);stroke-width:3px}
+.думает .метка_думы{opacity:1}
+body.снимок .линия_думы{animation:none !important;stroke-dashoffset:0 !important}
+body.снимок .астана_метка{transition:none !important;opacity:.92 !important}
+body.снимок .узел_думы,body.снимок .метка_думы{transition:none !important;animation:none !important}
+body.снимок .думает .узел_думы,body.снимок .думает .метка_думы{opacity:1 !important}
+
+/* реплика AIAN внизу слева — «как чатбот» (второе совещание) */
+#реплика{position:absolute;left:4vw;bottom:8vh;z-index:6;
+  max-width:min(46vw,720px);padding:2vmin 2.6vmin;border-radius:14px;
+  background:linear-gradient(165deg,rgba(14,28,46,.95),rgba(6,12,24,.92));
+  border:1px solid rgba(62,230,184,.42);border-top-color:rgba(215,226,242,.18);
+  box-shadow:0 14px 48px rgba(0,0,0,.6);
+  opacity:0;transform:translateY(14px);transition:all .7s ease;pointer-events:none}
+.ответил #реплика{opacity:1;transform:none}
+.реп_ярлык{font-size:clamp(11px,1.6vmin,18px);font-weight:700;letter-spacing:.16em;
+  color:var(--мята);margin-bottom:1vmin}
+.реп_текст{font-size:clamp(18px,2.9vmin,34px);font-weight:600;line-height:1.25}
+.реп_низ{font-size:clamp(12px,1.9vmin,22px);color:var(--приглуш);margin-top:1vmin}
+.реп_итог{font-size:clamp(12px,1.9vmin,22px);color:var(--мята);margin-top:1.2vmin;
+  padding-top:1.2vmin;border-top:1px solid rgba(62,230,184,.25)}
+body.снимок #реплика{transition:none !important}
+
 /* красный регион */
 .улытау_тревога{fill:rgba(255,90,79,.0);stroke:var(--красный);stroke-width:0;
   transition:none}
@@ -232,8 +298,10 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
   filter:drop-shadow(0 0 18px rgba(255,90,79,.7))}
 @keyframes пульс{0%,100%{fill:rgba(255,90,79,.25);stroke-width:1.5}
   50%{fill:rgba(255,90,79,.55);stroke-width:2.5}}
-.отбой .улытау_тревога{animation:none;fill:rgba(62,213,152,.22);
-  stroke:var(--зелёный);stroke-width:1.5;filter:drop-shadow(0 0 14px rgba(62,213,152,.5));
+/* зелёный держим заметным: с задних рядов отбой должен читаться так же
+   ясно, как тревога — это кульминация «дефицит предотвращён» */
+.отбой .улытау_тревога{animation:none;fill:rgba(62,213,152,.42);
+  stroke:var(--зелёный);stroke-width:2.2;filter:drop-shadow(0 0 18px rgba(62,213,152,.75));
   transition:all 2s ease}
 /* донор поставки: отдал часть запаса — статус мягко уходит в «внимание».
    Смысловая пара к отбою: помощь не бесплатна, система это тоже видит */
@@ -244,47 +312,9 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
 .отбой .бейдж[data-ключ="ulytau"]{fill:var(--зелёный);animation:none;
   filter:drop-shadow(0 0 6px rgba(62,213,152,.8));transition:fill 2s ease}
 
-/* чат-запрос к ИИ на экране ДАЦ */
-#чат{position:absolute;left:50%;top:calc(6.2vh + clamp(30px,4.8vh,54px) + 2.2vh);
-  transform:translateX(-50%);display:flex;flex-direction:column;gap:.9vmin;
-  align-items:center;opacity:0;transition:opacity .6s ease;z-index:4}
-.чат_виден #чат{opacity:1}
-#чат_вопрос{background:linear-gradient(165deg,rgba(14,28,46,.94),rgba(6,12,24,.88));
-  border:1px solid rgba(79,227,255,.4);border-top-color:rgba(215,226,242,.16);
-  border-radius:10px;padding:1.2vmin 2vmin;font-size:clamp(14px,2.3vmin,27px);
-  letter-spacing:.02em;box-shadow:0 0 24px rgba(79,227,255,.12)}
-.чат_метка{font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
-  color:var(--приглуш);margin-right:1.2vmin;font-size:.66em;
-  text-transform:uppercase;letter-spacing:.18em}
-#чат_курсор{color:var(--циан);animation:мигание 1s steps(1) infinite}
-@keyframes мигание{50%{opacity:0}}
-#чат_статус{font-size:clamp(12px,1.9vmin,22px);color:var(--приглуш);
-  opacity:0;transition:opacity .5s ease}
-#чат_статус b{font-family:'Unbounded',system-ui,sans-serif;letter-spacing:.06em;
-  background:linear-gradient(100deg,#BFF2FF 4%,var(--циан) 38%,var(--мята) 92%);
-  -webkit-background-clip:text;background-clip:text;color:transparent}
-.чат_думает_идёт #чат_статус{opacity:1}
-#чат_думает i{font-style:normal;animation:точка 1.2s infinite}
-#чат_думает i:nth-child(2){animation-delay:.2s}
-#чат_думает i:nth-child(3){animation-delay:.4s}
-@keyframes точка{0%,60%,100%{opacity:.2}30%{opacity:1}}
-#чат_ответ{display:none;color:var(--текст)}
-.чат_ответил #чат_думает{display:none}
-.чат_ответил #чат_ответ{display:inline}
-.чат_ответил #чат_курсор{display:none}
-body.снимок #чат{opacity:1}
-
-/* карточка проблемного региона */
-#карточка{position:absolute;left:60%;top:27%;width:clamp(260px,23vw,450px);
-  padding:2.2vmin 2.5vmin;
-  background:linear-gradient(165deg,rgba(26,16,20,.92),rgba(10,8,14,.88));
-  border:1px solid rgba(255,90,79,.55);border-top-color:rgba(255,160,150,.3);border-radius:12px;
-  opacity:0;transform:translateY(14px);transition:all .8s ease .8s}
-.такт.активен #карточка.показана{opacity:1;transform:none}
-#карточка h3{font-family:'Unbounded',system-ui,sans-serif;
-  font-size:clamp(13px,2.1vmin,25px);color:var(--красный);margin-bottom:1vmin;font-weight:500}
-#карточка p{font-size:clamp(12px,2vmin,23px);color:var(--текст);line-height:1.45}
-#карточка .мелко{font-size:clamp(10px,1.6vmin,19px);color:var(--приглуш);margin-top:1vmin}
+/* Чат-запрос и карточка «Проблемный регион» сняты вторым совещанием:
+   «он просто подумал и подсветил» — система решает молча, без
+   объяснений на экране. Их стили удалены вместе с разметкой. */
 
 /* поток поставок */
 /* поток поставок — не пунктир, а живое русло: свечение-подложка, тонкая
@@ -357,9 +387,17 @@ body.снимок #знак_аян{opacity:1 !important;transform:translate(-50%
 body.снимок #подпись{transition:none}
 body.снимок .тревога_идёт .улытау_тревога{animation:none !important;
   fill:rgba(255,90,79,.45) !important;stroke-width:2 !important}
+/* в снимках переходы заморожены — снимаем их, иначе кадр ловит начало
+   перехода, а не конечное состояние (поймано на зелёном отбое) */
+body.снимок .улытау_тревога, body.снимок .область[data-ключ="atyrau"],
+body.снимок .бейдж[data-ключ="atyrau"], body.снимок .бейдж[data-ключ="ulytau"]{
+  transition:none !important}
 body.снимок .поток_свечение, body.снимок .поток_линия,
 body.снимок .поток_капля, body.снимок .поток_исток{
-  transition:none !important;opacity:1 !important;animation:none !important}
+  transition:none !important;animation:none !important}
+body.снимок .поток_идёт .поток_свечение, body.снимок .поток_идёт .поток_линия,
+body.снимок .поток_идёт .поток_капля, body.снимок .поток_идёт .поток_исток{
+  opacity:1 !important}
 body.снимок .область, body.снимок .бейдж, body.снимок .огонёк{
   transition:none !important;transition-delay:0s !important}
 body.снимок .бейдж.тревога{animation:none !important}
@@ -399,7 +437,7 @@ body.снимок #финал .эффект, body.снимок #финал #ци
    они несут значение, а не украшение */
 @media (prefers-reduced-motion: reduce){
   #титул_фон{animation:none}
-  #чат_курсор{animation:none}
+  .узел_думы{animation:none}
   @keyframes дрейф{from{transform:none}to{transform:none}}
 }
 
@@ -427,23 +465,21 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.55)"></div>
     <div class="виньетка"></div>
     <div class="центр" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.2vmin">
-      <div id="зачем_заголовок">Оборот нефтепродуктов</div>
-      <!-- структура слайда задана на утреннем совещании 20.08:
-           Вызов → Цель → Путь, внизу цепочка блоков с источниками (МЭ всегда первым) -->
+      <div id="зачем_заголовок" class="дисплей">KMG.<b class="град_текст">AIAN</b></div>
+      <!-- структура слайда по второму совещанию 20.08: вместо ярлыков
+           «Вызов · Цель · Путь» — нумерация 1-2-3, «не оцифрованы» снято,
+           оборот нефтепродуктов из заголовка убран, туда встал AIAN -->
       <div class="тезисы" id="вызов_цель_путь">
         <div class="тезис">
-          <svg viewBox="0 0 24 24"><path d="M12 3L21.5 19.5H2.5Z"/><path d="M12 9.5V14"/><circle cx="12" cy="16.8" r="0.6"/></svg>
-          <span class="ярлык">Вызов</span>
-          <span class="суть">Данные разрознены и не оцифрованы
+          <span class="номер">1</span>
+          <span class="суть">Данные разрознены
             <i>сложность расчёта запасов ГСМ в стране</i></span></div>
         <div class="тезис">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.2"/></svg>
-          <span class="ярлык">Цель</span>
+          <span class="номер">2</span>
           <span class="суть">Оцифровать всю цепочку оборота нефтепродуктов
             <i>от добычи до реализации · от плановых данных — к фактическим</i></span></div>
         <div class="тезис">
-          <svg viewBox="0 0 24 24"><path d="M4 20C4 14 8 12 12 12C16 12 20 10 20 4"/><path d="M16.5 4H20V7.5"/><circle cx="4" cy="20" r="1.3"/></svg>
-          <span class="ярлык">Путь</span>
+          <span class="номер">3</span>
           <span class="суть">Платформа на базе искусственного интеллекта
             <i>единый контур топливного баланса РК</i></span></div>
       </div>
@@ -465,12 +501,18 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     <div class="метка_видео" data-от="6.0"  data-до="9.6"  style="left:40%;top:47%">вагоны в пути</div>
     <div class="метка_видео" data-от="10.6" data-до="14.2" style="left:48%;top:32%">баланс производства НПЗ</div>
     <div class="метка_видео" data-от="15.2" data-до="17.4" style="left:46%;top:26%">поток данных — в центр</div>
-    <!-- модалка источников: на каждом этапе всплывает карточка с системами,
-         которые дают данные именно на этом участке цепочки -->
-    <div class="модалка_систем" id="модалка_видео">
+    <!-- источники накапливаются (правка второго совещания): карточка этапа
+         не сменяется, а остаётся, следующая добавляется ниже. В конце все
+         три уезжают вбок — экран освобождается под карту -->
+    <div id="стопка_источников">
       <div class="мод_ярлык">Источники данных</div>
-      <div class="мод_блок"></div>
-      <div class="мод_список"></div>
+      <div class="мод_карта" data-от="1.0"><b>Добыча</b>
+        <div class="мод_список"><span>МЭ</span><span>ЦД</span></div>
+        <i>ЦД — цифровой двойник месторождения</i></div>
+      <div class="мод_карта" data-от="5.8"><b>Транспортировка и переработка</b>
+        <div class="мод_список"><span>МЭ</span><span>НПЗ</span><span>КТО</span></div></div>
+      <div class="мод_карта" data-от="14.8"><b>Оборот НП</b>
+        <div class="мод_список"><span>МЭ</span><span>КТЖ</span><span>КГД</span></div></div>
     </div>
     <!-- та же цепочка, что на слайде: блок и его источники, МЭ первым -->
     <div id="этапы">
@@ -482,10 +524,20 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     </div>
   </section>
 
-  <!-- ТАКТ 2: карта, данные стекаются в Астану -->
+  <!-- ТАКТ 3: карта одним ходом (правка второго совещания): данные стекаются
+       в ДАЦ → AIAN думает → сам подсвечивает проблемный регион → поставка с
+       запада → регион зеленеет. Чат-бот и карточка с расшифровкой сняты:
+       «он просто подумал и подсветил» -->
   <section class="такт такт_карта" id="карта_центр">
     <video id="видео_мост" src="медиа/мост.mp4" muted playsinline preload="auto"></video>
     <div id="знак_аян" class="дисплей">KMG.<b class="град_текст">AIAN</b></div>
+    <!-- реплика AIAN слева внизу — «как чатбот», вместо центральной подписи -->
+    <div id="реплика">
+      <div class="реп_ярлык дисплей">AIAN</div>
+      <div class="реп_текст">Дефицит предотвращён — до того, как случился</div>
+      <div class="реп_низ">скорректировать поставки · ускорить отгрузку · перераспределить объёмы</div>
+      <div class="реп_итог">прозрачное распределение нефтепродуктов</div>
+    </div>
     <!-- та же модалка, что над видео: на карте она собирает все источники,
          чьи линии сошлись в аналитическом центре -->
     <!-- модалка внизу справа: у Астаны сходятся линии, там её ставить нельзя -->
@@ -500,26 +552,7 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     </div>
   </section>
 
-  <!-- ТАКТ 3: экран ДАЦ, области, проблемный регион -->
-  <section class="такт такт_карта" id="карта_области">
-    <div id="рамка_дац"><div class="шапка"><b>ДАЦ</b> Диспетчерско-аналитический центр · мониторинг запасов нефтепродуктов</div></div>
-    <!-- жест живой системы: вопрос в чат → ИИ думает → карта отвечает.
-         Тот же жест Председатель повторит в настоящей системе через минуту -->
-    <div id="чат">
-      <div id="чат_вопрос"><span class="чат_метка">Вопрос</span><span id="чат_текст"></span><span id="чат_курсор">▎</span></div>
-      <div id="чат_статус"><b>AIAN</b><span id="чат_думает">&nbsp;думает<i>.</i><i>.</i><i>.</i></span><span id="чат_ответ">&nbsp;— ответ на карте</span></div>
-    </div>
-    <div id="карточка">
-      <h3>Проблемный регион</h3>
-      <p>Остатки ниже порога.<br>Запаса — считанные дни, топливо уже в пути.</p>
-      <div class="мелко">Запасы: нефтебазы · в пути (КТЖ) · в днях потребления</div>
-    </div>
-  </section>
-
-  <!-- ТАКТ 4: решение, поток поставок -->
-  <section class="такт такт_карта" id="карта_решение"></section>
-
-  <!-- ТАКТ 5: передача экрана живой системе -->
+  <!-- ТАКТ 4: передача экрана живой системе -->
   <section class="такт" id="передача">
     <div id="титул_фон2" style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.68)"></div>
     <div class="виньетка"></div>
@@ -602,102 +635,86 @@ const ТАКТЫ = [
   { id:'цепочка',
     вход(){
       видео.currentTime = 0; видео.play();
-      if(режимСнимка) обновитьМодалку(3); // для покадровой проверки
+      сброситьСтопку();
+      if(режимСнимка) обновитьМодалку(15); // для покадровой проверки — все три
       /* фраза заказчика с совещания: «от скважины до конечного потребителя» —
          бывшая подпись дублировала цепочку блоков над ней */
       подпись('Вся цепочка — в цифре',
               'от скважины до конечного потребителя', 15500);
     },
-    выход(){
-      видео.pause();
-      текущийУчасток = null;
-      document.getElementById('модалка_видео').classList.remove('видна');
-    } },
+    выход(){ видео.pause(); сброситьСтопку(); } },
   { id:'карта_центр',
+    /* два нажатия внутри такта: 1 — AIAN думает и сам подсвечивает регион,
+       2 — поставка с запада и отбой. Без чата и подписей: «он просто
+       подумал и подсветил» (второе совещание) */
+    подшагов: 2,
     вход(){
       const с = document.getElementById('карта_центр');
       const м = document.getElementById('видео_мост');
       с.classList.remove('мост_прошёл','линии_пошли');
+      this.таймеры = [];
       let пущено = false;
       const пуск = ()=>{
         if(пущено) return; пущено = true;
         с.classList.add('мост_прошёл','линии_пошли');
-        подпись('Аналитический центр КМГ — более 10 лет данных',
-                'на этой основе работает искусственный интеллект', 2600);
-        setTimeout(()=>document.getElementById('знак_аян').classList.add('показан'), 3400);
-        // модалка выходит, когда линии уже дотянулись до центра
-        setTimeout(()=>document.getElementById('модалка_карты').classList.add('видна'), 2400);
+        // на подшагах подпись уже снята — не возвращаем её поверх реплики
+        if(подшаг === 0)
+          подпись('Аналитический центр КМГ — более 10 лет данных',
+                  'на этой основе работает искусственный интеллект', 2600);
+        this.таймеры.push(setTimeout(()=>document.getElementById('знак_аян').classList.add('показан'), 3400));
+        // модалка выходит, когда линии уже дотянулись до центра;
+        // на подшагах она уже снята — не возвращаем
+        if(подшаг === 0)
+          this.таймеры.push(setTimeout(()=>document.getElementById('модалка_карты').classList.add('видна'), 2400));
       };
       if(м && !м.error && м.getAttribute('src')){
         м.currentTime = 0;
         м.play().then(()=>{ м.onended = пуск; }).catch(пуск);
-        setTimeout(пуск, 7000); // страховка: мост завис — карта всё равно оживает
+        this.таймеры.push(setTimeout(пуск, 7000)); // страховка: мост завис
       } else пуск();
       if(режимСнимка) пуск();
+    },
+    подшаг(к){
+      const с = document.getElementById('карта_центр');
+      const свг = с.querySelector('svg.карта');
+      (this.шаговые||[]).forEach(clearTimeout);
+      this.шаговые = [];
+      if(к === 0){
+        с.classList.remove('думает','тревога_идёт','поток_идёт','отбой','ответил');
+        свг && свг.classList.remove('цвета_пошли');
+        return;
+      }
+      if(к >= 1){
+        // мост мог ещё идти — на первом нажатии карта показывается сразу,
+        // а отложенный показ модалки источников снимается
+        (this.таймеры||[]).forEach(clearTimeout);
+        с.classList.add('мост_прошёл','линии_пошли','думает');
+        document.getElementById('модалка_карты').classList.remove('видна');
+        подпись('', '');
+        свг && свг.classList.add('цвета_пошли');
+        this.шаговые.push(setTimeout(()=>с.classList.add('тревога_идёт'), режимСнимка?0:1600));
+      }
+      if(к >= 2){
+        this.шаговые.push(setTimeout(()=>с.classList.add('поток_идёт'), режимСнимка?0:600));
+        this.шаговые.push(setTimeout(()=>{
+          с.classList.remove('тревога_идёт'); с.classList.add('отбой','ответил');
+        }, режимСнимка?0:2400));
+      } else {
+        с.classList.remove('поток_идёт','отбой','ответил');
+      }
     },
     выход(){
       const м = document.getElementById('видео_мост');
       м && м.pause();
+      (this.таймеры||[]).forEach(clearTimeout);
+      (this.шаговые||[]).forEach(clearTimeout);
+      const с = document.getElementById('карта_центр');
       document.getElementById('знак_аян').classList.remove('показан');
       document.getElementById('модалка_карты').classList.remove('видна');
-      document.getElementById('карта_центр').classList.remove('мост_прошёл','линии_пошли');
-    } },
-  { id:'карта_области',
-    // жест живой системы: печатается вопрос → ИИ думает → карта отвечает
-    вход(){
-      const с = document.getElementById('карта_области');
-      const свг = с.querySelector('svg.карта');
-      const тэ = document.getElementById('чат_текст');
-      const ВОПРОС = 'В каких областях есть риск дефицита топлива?';
-      с.classList.remove('отбой');
-      с.classList.add('чат_виден');
-      this.таймеры = [];
-      const ответ = ()=>{
-        с.classList.add('чат_ответил');
-        свг && свг.classList.add('цвета_пошли');
-        this.таймеры.push(setTimeout(()=>с.classList.add('тревога_идёт'), 1800));
-        this.таймеры.push(setTimeout(()=>document.getElementById('карточка').classList.add('показана'), 2600));
-        подпись('Система сама находит зоны риска',
-                'запасы каждой области: нефтебазы · в пути · в днях потребления', 3400);
-      };
-      if(режимСнимка){ тэ.textContent = ВОПРОС; с.classList.add('чат_думает_идёт'); ответ(); return; }
-      тэ.textContent = '';
-      /* буквы считаются от реального времени, а не от числа тиков: фоновые
-         вкладки троттлят таймеры до 1 Гц, и печать «по тику» зависала */
-      const старт = performance.now();
-      this.печать = setInterval(()=>{
-        const и = Math.min(ВОПРОС.length, Math.floor((performance.now()-старт)/42));
-        тэ.textContent = ВОПРОС.slice(0, и);
-        if(и >= ВОПРОС.length){
-          clearInterval(this.печать);
-          с.classList.add('чат_думает_идёт');
-          this.таймеры.push(setTimeout(ответ, 2200)); // ИИ «думает»
-        }
-      }, 40);
-    },
-    выход(){
-      clearInterval(this.печать);
-      (this.таймеры||[]).forEach(clearTimeout);
-      const с = document.getElementById('карта_области');
-      с.classList.remove('тревога_идёт','чат_виден','чат_думает_идёт','чат_ответил');
+      с.classList.remove('мост_прошёл','линии_пошли','думает','тревога_идёт','поток_идёт','отбой','ответил');
       const свг = с.querySelector('svg.карта');
       свг && свг.classList.remove('цвета_пошли');
-      document.getElementById('карточка').classList.remove('показана');
     } },
-  { id:'карта_решение',
-    вход(){
-      const с = document.getElementById('карта_решение');
-      const свг = с.querySelector('svg.карта');
-      свг && свг.classList.add('цвета_пошли'); // карта приходит уже окрашенной
-      с.classList.add('тревога_идёт');
-      setTimeout(()=>с.classList.add('поток_идёт'), 1800);     // топливо пошло с запада
-      setTimeout(()=>{ с.classList.remove('тревога_идёт'); с.classList.add('отбой'); }, 3600);
-      /* формула «от мониторинга к проактивному управлению» намеренно убрана:
-         она звучит в живой части у Председателя — дубль зачищен */
-      подпись('Дефицит предотвращён — до того, как случился',
-              'скорректировать поставки · ускорить отгрузку · перераспределить объёмы', 4200);
-    },
-    выход(){ document.getElementById('карта_решение').classList.remove('отбой','поток_идёт'); } },
   { id:'передача',
     вход(){ подпись('', ''); } },
   { id:'финал',
@@ -730,6 +747,8 @@ function обновитьХод(){
 /* ?такт=N — открыть показ сразу с такта N (репетиции, проверка кадров).
    Приём перенесён из ЦД. */
 const стартовыйТакт = +(new URLSearchParams(location.search).get('такт') || 0);
+const стартовыйШаг = new URLSearchParams(location.search).has('шаг')
+  ? +new URLSearchParams(location.search).get('шаг') : null;
 const режимСнимка = !!(new URLSearchParams(location.search).get('снимок'));
 if(режимСнимка) document.body.classList.add('снимок');
 if(new URLSearchParams(location.search).get('пусто')) document.body.classList.add('пусто');
@@ -749,6 +768,10 @@ function показать(н, целиком){
   document.getElementById(ТАКТЫ[номер].id).classList.add('активен');
   подшаг = целиком ? (ТАКТЫ[номер].подшагов || 0) : 0;
   if(режимСнимка) подшаг = ТАКТЫ[номер].подшагов || 0;
+  /* ?шаг=N — открыть такт на конкретном подшаге (репетиции и проверка кадров) */
+  if(стартовыйШаг !== null && н === стартовыйТакт){
+    подшаг = Math.max(0, Math.min(ТАКТЫ[номер].подшагов || 0, стартовыйШаг));
+  }
   применитьПодшаг();
   ТАКТЫ[номер].вход && ТАКТЫ[номер].вход();
   document.getElementById('подсказка').style.opacity = номер ? 0 : 1;
@@ -791,25 +814,25 @@ addEventListener('click', ()=>вперёд());
   if(ТАКТЫ[номер] && ТАКТЫ[номер].id==='цепочка') показать(номер+1);
 });
 
-/* Модалка источников идёт по времени видео: на каждом участке цепочки
-   всплывает своя карточка. Состав систем — с утреннего совещания 20.08,
-   МЭ первым в каждом блоке. */
-const УЧАСТКИ = [
-  {от:1.0,  до:5.4,  блок:'Добыча',                       системы:['МЭ','ЦД']},
-  {от:5.8,  до:14.6, блок:'Транспортировка и переработка', системы:['МЭ','НПЗ','КТО']},
-  {от:14.8, до:99,   блок:'Оборот НП',                    системы:['МЭ','КТЖ','КГД']},
-];
-const модВидео = document.getElementById('модалка_видео');
-let текущийУчасток = null;
+/* Источники накапливаются по времени видео: карточка этапа выходит и
+   остаётся, следующая добавляется ниже. К концу ленты все три уезжают
+   вбок — экран освобождается под карту. Состав систем и порядок «МЭ
+   первым» — с совещаний 20.08. */
+const стопка = document.getElementById('стопка_источников');
+const УЕЗД = 17.0; // за полсекунды до конца вырезки
 function обновитьМодалку(т){
-  const у = УЧАСТКИ.find(у=>т >= у.от && т < у.до) || null;
-  if(у === текущийУчасток) return;
-  текущийУчасток = у;
-  if(!у){ модВидео.classList.remove('видна'); return; }
-  модВидео.querySelector('.мод_блок').textContent = у.блок;
-  модВидео.querySelector('.мод_список').innerHTML =
-    у.системы.map(с=>`<span>${с}</span>`).join('');
-  модВидео.classList.add('видна');
+  let естьХоть = false;
+  стопка.querySelectorAll('.мод_карта').forEach(к=>{
+    const пора = т >= +к.dataset.от;
+    к.classList.toggle('видна', пора);
+    if(пора) естьХоть = true;
+  });
+  стопка.classList.toggle('начата', естьХоть);
+  стопка.classList.toggle('уехала', т >= УЕЗД);
+}
+function сброситьСтопку(){
+  стопка.classList.remove('начата','уехала');
+  стопка.querySelectorAll('.мод_карта').forEach(к=>к.classList.remove('видна'));
 }
 
 /* этапная лента цепочки — подсветка по времени видео */
@@ -943,8 +966,11 @@ async function построитьКарты(){
     return s;
   }
 
-  /* такт 2: страна + линии данных в Астану */
-  const с2 = собратьКарту(document.getElementById('карта_центр'), 'контур');
+  /* Одна карта на весь такт (правка второго совещания): сначала контуром
+     собираются данные в ДАЦ, затем на ней же AIAN подсвечивает регион и
+     ведёт поставку. Три отдельные карты отклонены: между ними моргал
+     переход, а зал должен видеть один непрерывный ход. */
+  const с2 = собратьКарту(document.getElementById('карта_центр'), 'области');
   const АСТАНА = проецируй(71.43, 51.17);
   /* у каждой точки сбора — своя система, та же, что на слайде и в видео:
      зал видит, чьи именно данные стекаются в центр */
@@ -988,13 +1014,28 @@ async function построитьКарты(){
   метка.textContent = 'АСТАНА · ДАЦ';
   с2.appendChild(метка);
 
-  /* такт 3: области с тонами и тревогой */
-  собратьКарту(document.getElementById('карта_области'), 'области');
+  /* узел «AIAN думает»: от Астаны уходит линия влево, на её конце
+     пульсирует знак — там система принимает решение (второе совещание) */
+  const [ух,уу] = [АСТАНА[0] - 300, АСТАНА[1] - 40];
+  const дума = свг('path');
+  дума.setAttribute('d', `M${АСТАНА[0]},${АСТАНА[1]} L${ух},${уу}`);
+  дума.classList.add('линия_думы');
+  с2.appendChild(дума);
+  дума.style.setProperty('--длина', дума.getTotalLength());
+  const узел = свг('circle');
+  узел.setAttribute('cx',ух); узел.setAttribute('cy',уу); узел.setAttribute('r',10);
+  узел.classList.add('узел_думы');
+  с2.appendChild(узел);
+  const подписьДумы = свг('text');
+  подписьДумы.setAttribute('x',ух); подписьДумы.setAttribute('y',уу-22);
+  подписьДумы.setAttribute('text-anchor','middle');
+  подписьДумы.classList.add('метка_думы');
+  подписьДумы.textContent = 'AIAN';
+  с2.appendChild(подписьДумы);
 
-  /* такт 4: то же + поток поставок Павлодар→Ұлытау */
   /* поток с запада: Атырауский НПЗ → Ұлытау. Запад — главный источник
      нефтепродуктов; Павлодар отклонён правкой заказчика */
-  const с4 = собратьКарту(document.getElementById('карта_решение'), 'области');
+  const с4 = с2;
   const [пх1,пу1]=проецируй(51.88,47.11), [пх2,пу2]=проецируй(66.8,48.0);
   const пкх=(пх1+пх2)/2, пку=(пу1+пу2)/2 - 95;
   const дуга = `M${пх1},${пу1} Q${пкх},${пку} ${пх2},${пу2}`;
