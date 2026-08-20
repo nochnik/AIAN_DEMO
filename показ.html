@@ -79,7 +79,9 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   border:1px solid rgba(79,227,255,.28);border-top-color:rgba(215,226,242,.14);
   border-left:3px solid var(--циан);border-radius:14px;
   text-shadow:0 2px 20px rgba(0,0,0,.9);
-  opacity:0;transform:translateY(14px);transition:all .9s ease}
+  /* строки выходят не сами, а по нажатию докладчика — см. подшаги такта */
+  opacity:0;transform:translateY(14px);transition:all .7s ease}
+.тезис.виден{opacity:1;transform:none}
 .тезис svg{width:clamp(28px,4.4vmin,48px);height:clamp(28px,4.4vmin,48px);flex:0 0 auto;
   fill:none;stroke:var(--мята);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
   filter:drop-shadow(0 0 10px rgba(62,230,184,.5))}
@@ -91,10 +93,11 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
 #вызов_цель_путь .суть{font-size:clamp(18px,3vmin,36px);line-height:1.3}
 #вызов_цель_путь .суть i{display:block;font-style:normal;font-weight:400;
   font-size:clamp(12px,2vmin,23px);color:var(--приглуш);margin-top:.5vmin}
-#цепочка_блоки{display:flex;gap:1.4vmin;align-items:stretch;justify-content:center;
-  opacity:0;transform:translateY(12px);transition:all .9s ease}
-.такт.активен #цепочка_блоки{opacity:1;transform:none;transition-delay:2.7s}
-body.снимок #цепочка_блоки{transition:none !important;opacity:1 !important;transform:none !important}
+#цепочка_блоки{display:flex;gap:1.4vmin;align-items:stretch;justify-content:center}
+/* блоки цепочки тоже выходят по нажатию, по одному */
+#цепочка_блоки > *{opacity:0;transform:translateY(10px);transition:all .6s ease}
+#цепочка_блоки > *.виден{opacity:1;transform:none}
+body.снимок #цепочка_блоки > *{transition:none !important;opacity:1 !important;transform:none !important}
 #цепочка_блоки .блок{display:flex;flex-direction:column;gap:.5vmin;align-items:center;
   justify-content:center;text-align:center;padding:1.2vmin 2vmin;border-radius:10px;
   background:linear-gradient(165deg,rgba(14,28,46,.9),rgba(6,12,24,.82));
@@ -102,10 +105,6 @@ body.снимок #цепочка_блоки{transition:none !important;opacity:
 #цепочка_блоки .блок b{font-size:clamp(13px,2vmin,24px);font-weight:600;letter-spacing:.02em}
 #цепочка_блоки .блок span{font-size:clamp(11px,1.6vmin,18px);color:var(--приглуш);letter-spacing:.08em}
 .блок_стрелка{align-self:center;color:rgba(124,141,166,.5);font-size:clamp(14px,2.4vmin,28px)}
-.такт.активен .тезис{opacity:1;transform:none}
-.такт.активен .тезис:nth-child(1){transition-delay:.3s}
-.такт.активен .тезис:nth-child(2){transition-delay:1.1s}
-.такт.активен .тезис:nth-child(3){transition-delay:1.9s}
 body.снимок .тезис{transition:none !important}
 
 /* ---------- цепочка (видео) ---------- */
@@ -122,9 +121,33 @@ body.снимок .тезис{transition:none !important}
 /* пройденные этапы не гаснут в серый — прогресс цепочки накапливается */
 .этап.пройден{color:var(--текст);border-color:rgba(79,227,255,.45)}
 .этап.пройден .точка{background:var(--циан)}
-.этап .точка{display:inline-block;width:9px;height:9px;border-radius:50%;
-  background:var(--приглуш);margin-right:12px;vertical-align:2px;transition:background .6s}
-.этап.горит .точка{background:var(--циан);box-shadow:0 0 10px var(--циан)}
+.этап b{display:block;font-weight:600}
+
+/* модалка источников: всплывает над кадром и над картой, показывает,
+   чьи данные идут на этом участке. Мелкие подписи внутри блоков отклонены
+   заказчиком — с задних рядов не читались */
+.модалка_систем{position:absolute;right:6vw;top:26%;z-index:5;
+  min-width:clamp(200px,20vw,340px);padding:2vmin 2.4vmin;border-radius:14px;
+  background:linear-gradient(165deg,rgba(14,28,46,.94),rgba(6,12,24,.9));
+  border:1px solid rgba(79,227,255,.36);border-top-color:rgba(215,226,242,.18);
+  box-shadow:0 12px 48px rgba(0,0,0,.55);
+  opacity:0;transform:translateY(12px) scale(.98);
+  transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.модалка_систем.видна{opacity:1;transform:none}
+.мод_ярлык{font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
+  font-size:clamp(10px,1.4vmin,16px);letter-spacing:.2em;text-transform:uppercase;
+  color:var(--приглуш)}
+.мод_блок{font-size:clamp(16px,2.5vmin,29px);font-weight:600;margin:.9vmin 0 1.4vmin;
+  line-height:1.2}
+.мод_список{display:flex;flex-wrap:wrap;gap:.9vmin}
+.мод_список span{display:inline-flex;align-items:center;gap:.7vmin;
+  padding:.7vmin 1.4vmin;border-radius:8px;
+  background:rgba(62,230,184,.1);border:1px solid rgba(62,230,184,.4);
+  font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
+  font-size:clamp(11px,1.7vmin,20px);letter-spacing:.08em;color:var(--мята)}
+.мод_список span::before{content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--мята);box-shadow:0 0 8px var(--мята)}
+body.снимок .модалка_систем{transition:none !important;opacity:1;transform:none}
 .стрелка_этап{color:rgba(124,141,166,.5);font-size:22px}
 /* цифровые метки над видео: физический мир на глазах становится данными
    (обещание раскадровки такта 2) */
@@ -174,6 +197,11 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
 .линии_пошли .линия_данных{animation:протяжка 2.2s ease forwards}
 @keyframes протяжка{to{stroke-dashoffset:0}}
 .точка_объекта{fill:var(--янтарь);filter:drop-shadow(0 0 8px var(--янтарь))}
+.метка_истока{fill:var(--мята);font-family:'Unbounded',system-ui,sans-serif;
+  font-size:12px;font-weight:500;letter-spacing:.12em;opacity:0;
+  transition:opacity .9s ease;paint-order:stroke;stroke:rgba(5,8,16,.85);stroke-width:3px}
+.линии_пошли .метка_истока{opacity:.95}
+body.снимок .метка_истока{transition:none !important;opacity:.95 !important}
 #астана_свет{fill:var(--циан);filter:drop-shadow(0 0 30px var(--циан));opacity:0}
 .линии_пошли #астана_свет{animation:вспышка 1.4s ease 2.2s forwards}
 .астана_метка{fill:var(--текст);font-family:'Unbounded',system-ui,sans-serif;
@@ -428,18 +456,25 @@ body.снимок #финал .эффект, body.снимок #финал #ци
   <!-- ТАКТ 2: цепочка одним пролётом (вырезка Seedance 3.4–20.9 с) -->
   <section class="такт" id="цепочка">
     <video id="видео_цепочка" src="медиа/цепочка.mp4" muted playsinline preload="auto"></video>
-    <div class="метка_видео" data-от="1.2"  data-до="5.2"  style="left:62%;top:38%">скважины · данные онлайн</div>
-    <div class="метка_видео" data-от="6.0"  data-до="9.6"  style="left:44%;top:45%">каждый вагон · КТЖ</div>
-    <div class="метка_видео" data-от="10.6" data-до="14.2" style="left:56%;top:30%">НПЗ · баланс производства</div>
-    <div class="метка_видео" data-от="15.2" data-до="17.4" style="left:52%;top:24%">поток данных — в ДАЦ</div>
+    <!-- метки описывают, что в кадре; чьи это системы — говорит модалка справа -->
+    <div class="метка_видео" data-от="1.2"  data-до="5.2"  style="left:56%;top:40%">скважины · данные онлайн</div>
+    <div class="метка_видео" data-от="6.0"  data-до="9.6"  style="left:40%;top:47%">вагоны в пути</div>
+    <div class="метка_видео" data-от="10.6" data-до="14.2" style="left:48%;top:32%">баланс производства НПЗ</div>
+    <div class="метка_видео" data-от="15.2" data-до="17.4" style="left:46%;top:26%">поток данных — в центр</div>
+    <!-- модалка источников: на каждом этапе всплывает карточка с системами,
+         которые дают данные именно на этом участке цепочки -->
+    <div class="модалка_систем" id="модалка_видео">
+      <div class="мод_ярлык">Источники данных</div>
+      <div class="мод_блок"></div>
+      <div class="мод_список"></div>
+    </div>
+    <!-- та же цепочка, что на слайде: блок и его источники, МЭ первым -->
     <div id="этапы">
-      <div class="этап" data-от="0"    data-до="5.4"><span class="точка"></span>Добыча</div>
+      <div class="этап" data-от="0" data-до="5.4"><b>Добыча</b></div>
       <div class="стрелка_этап">→</div>
-      <div class="этап" data-от="5.4"  data-до="9.8"><span class="точка"></span>Транспортировка</div>
+      <div class="этап" data-от="5.4" data-до="14.6"><b>Транспортировка и переработка</b></div>
       <div class="стрелка_этап">→</div>
-      <div class="этап" data-от="9.8"  data-до="14.6"><span class="точка"></span>Переработка</div>
-      <div class="стрелка_этап">→</div>
-      <div class="этап" data-от="14.6" data-до="99"><span class="точка"></span>Данные&nbsp;в&nbsp;центр</div>
+      <div class="этап" data-от="14.6" data-до="99"><b>Оборот НП</b></div>
     </div>
   </section>
 
@@ -447,6 +482,17 @@ body.снимок #финал .эффект, body.снимок #финал #ци
   <section class="такт такт_карта" id="карта_центр">
     <video id="видео_мост" src="медиа/мост.mp4" muted playsinline preload="auto"></video>
     <div id="знак_аян" class="дисплей">KMG.<b class="град_текст">AIAN</b></div>
+    <!-- та же модалка, что над видео: на карте она собирает все источники,
+         чьи линии сошлись в аналитическом центре -->
+    <!-- модалка внизу справа: у Астаны сходятся линии, там её ставить нельзя -->
+    <div class="модалка_систем" id="модалка_карты" style="right:4vw;top:auto;bottom:17%">
+      <div class="мод_ярлык">Источники данных</div>
+      <div class="мод_блок">Вся цепочка — в одном контуре</div>
+      <div class="мод_список">
+        <span>МЭ</span><span>ЦД</span><span>НПЗ</span>
+        <span>КТО</span><span>КТЖ</span><span>КГД</span>
+      </div>
+    </div>
   </section>
 
   <!-- ТАКТ 3: экран ДАЦ, области, проблемный регион -->
@@ -535,14 +581,33 @@ const ТАКТЫ = [
   { id:'титул',
     вход(){ подпись('', ''); } },
   { id:'зачем',
-    вход(){ подпись('', ''); } },
+    /* шесть нажатий внутри такта: вызов → цель → путь → и три блока
+       цепочки по одному. Докладчик ведёт зал сам, лента его не обгоняет */
+    подшагов: 6,
+    вход(){ подпись('', ''); },
+    подшаг(к){
+      const строки = [...document.querySelectorAll('#вызов_цель_путь .тезис')];
+      строки.forEach((э,и)=>э.classList.toggle('виден', к >= и+1));
+      const части = [...document.getElementById('цепочка_блоки').children];
+      // порядок в разметке: блок, стрелка, блок, стрелка, блок —
+      // стрелка выходит вместе с блоком, к которому ведёт
+      const группы = [[части[0]], [части[1],части[2]], [части[3],части[4]]];
+      группы.forEach((гр,и)=>гр.forEach(э=>э && э.classList.toggle('виден', к >= 4+и)));
+    } },
   { id:'цепочка',
     вход(){
       видео.currentTime = 0; видео.play();
+      if(режимСнимка) обновитьМодалку(3); // для покадровой проверки
+      /* фраза заказчика с совещания: «от скважины до конечного потребителя» —
+         бывшая подпись дублировала цепочку блоков над ней */
       подпись('Вся цепочка — в цифре',
-              'добыча · транспортировка · переработка · реализация', 15500);
+              'от скважины до конечного потребителя', 15500);
     },
-    выход(){ видео.pause(); } },
+    выход(){
+      видео.pause();
+      текущийУчасток = null;
+      document.getElementById('модалка_видео').classList.remove('видна');
+    } },
   { id:'карта_центр',
     вход(){
       const с = document.getElementById('карта_центр');
@@ -555,6 +620,8 @@ const ТАКТЫ = [
         подпись('Аналитический центр КМГ — более 10 лет данных',
                 'на этой основе работает искусственный интеллект', 2600);
         setTimeout(()=>document.getElementById('знак_аян').classList.add('показан'), 3400);
+        // модалка выходит, когда линии уже дотянулись до центра
+        setTimeout(()=>document.getElementById('модалка_карты').classList.add('видна'), 2400);
       };
       if(м && !м.error && м.getAttribute('src')){
         м.currentTime = 0;
@@ -567,6 +634,7 @@ const ТАКТЫ = [
       const м = document.getElementById('видео_мост');
       м && м.pause();
       document.getElementById('знак_аян').classList.remove('показан');
+      document.getElementById('модалка_карты').classList.remove('видна');
       document.getElementById('карта_центр').classList.remove('мост_прошёл','линии_пошли');
     } },
   { id:'карта_области',
@@ -660,24 +728,44 @@ const стартовыйТакт = +(new URLSearchParams(location.search).get('�
 const режимСнимка = !!(new URLSearchParams(location.search).get('снимок'));
 if(режимСнимка) document.body.classList.add('снимок');
 if(new URLSearchParams(location.search).get('пусто')) document.body.classList.add('пусто');
-function показать(н){
-  if(н<0 || н>=ТАКТЫ.length || н===номер && document.querySelector('.такт.активен')) {}
+/* подшаг — нажатие внутри такта (строки слайда выходят по одной).
+   Возврат назад открывает такт целиком: шаг назад не должен заставлять
+   докладчика заново прокликивать то, что зал уже видел */
+let подшаг = 0;
+function применитьПодшаг(){
+  const т = ТАКТЫ[номер];
+  т.подшаг && т.подшаг(подшаг);
+}
+function показать(н, целиком){
   const был = ТАКТЫ[номер];
   if(был && был.выход) был.выход();
   номер = Math.max(0, Math.min(ТАКТЫ.length-1, н));
   document.querySelectorAll('.такт').forEach(с=>с.classList.remove('активен'));
   document.getElementById(ТАКТЫ[номер].id).classList.add('активен');
+  подшаг = целиком ? (ТАКТЫ[номер].подшагов || 0) : 0;
+  if(режимСнимка) подшаг = ТАКТЫ[номер].подшагов || 0;
+  применитьПодшаг();
   ТАКТЫ[номер].вход && ТАКТЫ[номер].вход();
   document.getElementById('подсказка').style.opacity = номер ? 0 : 1;
   обновитьХод();
 }
+function вперёд(){
+  const т = ТАКТЫ[номер];
+  if(т.подшагов && подшаг < т.подшагов){ подшаг++; применитьПодшаг(); return; }
+  показать(номер+1);
+}
+function назад(){
+  const т = ТАКТЫ[номер];
+  if(т.подшагов && подшаг > 0){ подшаг--; применитьПодшаг(); return; }
+  показать(номер-1, true);
+}
 обновитьХод();
 addEventListener('keydown', е=>{
-  if(е.key==='ArrowRight'||е.key===' '||е.key==='PageDown'){ е.preventDefault(); показать(номер+1); }
-  if(е.key==='ArrowLeft'||е.key==='PageUp'){ е.preventDefault(); показать(номер-1); }
+  if(е.key==='ArrowRight'||е.key===' '||е.key==='PageDown'){ е.preventDefault(); вперёд(); }
+  if(е.key==='ArrowLeft'||е.key==='PageUp'){ е.preventDefault(); назад(); }
   // после живой демонстрации экран должен попадать в финал одним нажатием,
   // а не прощёлкиванием всех тактов на глазах у зала
-  if(е.key==='End'){ е.preventDefault(); показать(ТАКТЫ.length-1); }
+  if(е.key==='End'){ е.preventDefault(); показать(ТАКТЫ.length-1, true); }
   if(е.key==='Home'){ е.preventDefault(); показать(0); }
 });
 
@@ -690,13 +778,34 @@ function курсорПроснулся(){
 }
 addEventListener('mousemove', курсорПроснулся);
 курсорПроснулся();
-addEventListener('click', ()=>показать(номер+1));
+addEventListener('click', ()=>вперёд());
 
 /* цепочка не держит паузу на последнем кадре: луч уходит в небо — и сразу
    мост на карту (правка заказчика). Назад стрелкой вернуться по-прежнему можно. */
 видео.addEventListener('ended', ()=>{
   if(ТАКТЫ[номер] && ТАКТЫ[номер].id==='цепочка') показать(номер+1);
 });
+
+/* Модалка источников идёт по времени видео: на каждом участке цепочки
+   всплывает своя карточка. Состав систем — с утреннего совещания 20.08,
+   МЭ первым в каждом блоке. */
+const УЧАСТКИ = [
+  {от:1.0,  до:5.4,  блок:'Добыча',                       системы:['МЭ','ЦД']},
+  {от:5.8,  до:14.6, блок:'Транспортировка и переработка', системы:['МЭ','НПЗ','КТО']},
+  {от:14.8, до:99,   блок:'Оборот НП',                    системы:['МЭ','КТЖ','КГД']},
+];
+const модВидео = document.getElementById('модалка_видео');
+let текущийУчасток = null;
+function обновитьМодалку(т){
+  const у = УЧАСТКИ.find(у=>т >= у.от && т < у.до) || null;
+  if(у === текущийУчасток) return;
+  текущийУчасток = у;
+  if(!у){ модВидео.classList.remove('видна'); return; }
+  модВидео.querySelector('.мод_блок').textContent = у.блок;
+  модВидео.querySelector('.мод_список').innerHTML =
+    у.системы.map(с=>`<span>${с}</span>`).join('');
+  модВидео.classList.add('видна');
+}
 
 /* этапная лента цепочки — подсветка по времени видео */
 видео.addEventListener('timeupdate', ()=>{
@@ -705,6 +814,7 @@ addEventListener('click', ()=>показать(номер+1));
     э.classList.toggle('горит', т >= +э.dataset.от && т < +э.dataset.до);
     э.classList.toggle('пройден', т >= +э.dataset.до);
   });
+  обновитьМодалку(видео.currentTime);
   document.querySelectorAll('.метка_видео').forEach(м=>{
     const т = видео.currentTime;
     м.classList.toggle('горит', т >= +м.dataset.от && т < +м.dataset.до);
@@ -831,13 +941,19 @@ async function построитьКарты(){
   /* такт 2: страна + линии данных в Астану */
   const с2 = собратьКарту(document.getElementById('карта_центр'), 'контур');
   const АСТАНА = проецируй(71.43, 51.17);
-  const ИСТОКИ = [ // месторождения запада, НПЗ, юг — иллюстративные точки сбора
-    [53.0,46.4],[51.9,47.1],[55.1,45.3],   // запад: промыслы и Атырауский НПЗ
-    [76.96,52.29],                          // Павлодарский НПЗ
-    [69.59,42.32],                          // Шымкентский НПЗ
-    [63.6,53.2],[80.3,50.4],[57.2,50.3]     // север и восток — узлы КТЖ
+  /* у каждой точки сбора — своя система, та же, что на слайде и в видео:
+     зал видит, чьи именно данные стекаются в центр */
+  const ИСТОКИ = [
+    [53.0,46.4,'ЦД',  -1],   // промыслы запада — цифровой двойник
+    [51.9,47.1,'КТО', -1],   // Атырау: транспортировка нефти
+    [55.1,45.3,'МЭ',  -1],   // запад: отчётность Минэнерго
+    [76.96,52.29,'НПЗ', 1],  // Павлодарский НПЗ
+    [69.59,42.32,'НПЗ',-1],  // Шымкентский НПЗ
+    [63.6,53.2,'КТЖ', -1],   // северный узел железной дороги
+    [80.3,50.4,'КТЖ',  1],   // восточный узел
+    [57.2,50.3,'КГД', -1]    // фискальные данные
   ];
-  for(const [лон,лат] of ИСТОКИ){
+  for(const [лон,лат,система,сторона] of ИСТОКИ){
     const [x1,y1]=проецируй(лон,лат), [x2,y2]=АСТАНА;
     const пх=(x1+x2)/2 + (y2-y1)*0.25, пу=(y1+y2)/2 - (x2-x1)*0.25;
     const л = свг('path');
@@ -851,6 +967,13 @@ async function построитьКарты(){
     т.setAttribute('cx',x1); т.setAttribute('cy',y1); т.setAttribute('r',5);
     т.classList.add('точка_объекта');
     с2.appendChild(т);
+    const ярлык = свг('text');
+    ярлык.setAttribute('x', x1); ярлык.setAttribute('y', y1 + (сторона<0 ? 20 : -12));
+    ярлык.setAttribute('text-anchor','middle');
+    ярлык.classList.add('метка_истока');
+    ярлык.textContent = система;
+    ярлык.style.transitionDelay = (0.6 + Math.random()*0.8)+'s';
+    с2.appendChild(ярлык);
   }
   const свет = свг('circle');
   свет.setAttribute('cx',АСТАНА[0]); свет.setAttribute('cy',АСТАНА[1]);
