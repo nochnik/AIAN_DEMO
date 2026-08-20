@@ -49,11 +49,22 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
 /* ---------- титул ---------- */
 #титул_фон{position:absolute;inset:0;background:url("медиа/титул.jpg") center/cover;
   animation:дрейф 40s ease-in-out infinite alternate}
+#видео_титул{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity 1.2s ease}
+#видео_титул.играет{opacity:1}
 @keyframes дрейф{from{transform:scale(1.0) translateX(0)}to{transform:scale(1.08) translateX(-24px)}}
 .виньетка{position:absolute;inset:0;background:radial-gradient(ellipse at center,
   transparent 40%,rgba(0,0,0,.55) 100%)}
 #титул .центр{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:28px}
+/* подложка под именем: светлые потоки фона подходили вплотную к буквам,
+   и подзаголовок сливался (правка заказчика) */
+#титул .центр::before{content:'';position:absolute;left:50%;top:50%;
+  width:min(98vw,1750px);height:min(62vh,660px);transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse at center,rgba(3,6,13,.94) 0%,
+    rgba(3,6,13,.86) 34%,rgba(3,6,13,.5) 60%,rgba(3,6,13,0) 84%);
+  pointer-events:none}
+#титул .центр > *{position:relative}
 /* Логотип из презентации заказчика: тёмный знак не читается на чёрном,
    поэтому выбеливаем фильтром, а не правим файл. */
 #лого{height:clamp(40px,6vmin,68px);filter:brightness(0) invert(1) drop-shadow(0 0 18px rgba(79,227,255,.25));opacity:.92}
@@ -142,6 +153,9 @@ body.снимок .тезис{transition:none !important}
 /* на карте стопка перестаёт быть стопкой: карточки уменьшаются и разлетаются
    по своим местам, координаты считает JS от реальных точек карты */
 #стопка_источников.на_карте{width:auto}
+/* ярлык уходит вместе с перелётом карточек; двойной класс нужен, чтобы
+   перебить правило .начата ниже — иначе подпись висела над картой */
+#стопка_источников.на_карте.начата > .мод_ярлык,
 #стопка_источников.на_карте > .мод_ярлык{opacity:0}
 .мод_карта.летит{position:fixed;margin:0;width:clamp(240px,24vw,380px);
   transform-origin:center center;
@@ -166,8 +180,12 @@ body.снимок .тезис{transition:none !important}
   font-size:clamp(10px,1.4vmin,16px);color:var(--приглуш)}
 /* в снимках карточки показываем сразу, но у летящих transform не трогаем —
    иначе правило снимка отменяет саму посадку на карту */
+/* в снимках карточки показываем только когда они действительно открыты —
+   иначе кадр титула врал, будто источники уже на экране */
 body.снимок .мод_карта, body.снимок #стопка_источников > .мод_ярлык{
-  transition:none !important;opacity:1 !important}
+  transition:none !important}
+body.снимок .мод_карта.видна,
+body.снимок #стопка_источников.начата > .мод_ярлык{opacity:1 !important}
 body.снимок .мод_карта:not(.летит){transform:none !important}
 body.снимок #стопка_источников.на_карте > .мод_ярлык{opacity:0 !important}
 .мод_ярлык{font-family:'Unbounded',system-ui,sans-serif;font-weight:500;
@@ -480,7 +498,12 @@ body.снимок #финал .эффект, body.снимок #финал #ци
 
   <!-- ТАКТ 0: титул. Висит фоном сколько нужно — «чёрного экрана быть не должно». -->
   <section class="такт активен" id="титул">
-    <div id="титул_фон"></div><div class="виньетка"></div>
+    <!-- фон титула: зацикленный ролик поверх статичного кадра. Если видео
+         не загрузится, останется картинка — показ не сломается -->
+    <div id="титул_фон"></div>
+    <video id="видео_титул" src="медиа/титул_петля.mp4" muted loop playsinline
+           preload="auto" autoplay></video>
+    <div class="виньетка"></div>
     <div class="центр">
       <img id="лого" src="медиа/лого_кмг.png" alt="">
       <div id="имя">KMG.<b class="град_текст">AIAN</b></div>
@@ -597,7 +620,9 @@ body.снимок #финал .эффект, body.снимок #финал #ци
           <span>Снижение социального напряжения</span></div>
       </div>
       <div id="цифра" class="дисплей"><span id="цифра_число" class="град_текст">22,5 млрд тг</span><span>ожидаемый эффект · 2026–2030</span></div>
-      <div id="дорожка"><b>КТЖ — онлайн</b> · Минэнерго — интеграция · сети АЗС — следующий этап</div>
+      <!-- строка дорожной карты снята заказчиком: финал держится на
+           эффектах и цифре, перечень интеграций отвлекал -->
+
     </div>
   </section>
 
@@ -646,7 +671,19 @@ function подпись(большая, малая, задержка){
 const видео = document.getElementById('видео_цепочка');
 const ТАКТЫ = [
   { id:'титул',
-    вход(){ подпись('', ''); } },
+    вход(){
+      подпись('', '');
+      /* петля крутится, пока докладчик не нажмёт; на уходе ставим на паузу,
+         чтобы фон не жил под другими тактами */
+      const в = document.getElementById('видео_титул');
+      if(в && !в.error){
+        в.play().then(()=>в.classList.add('играет')).catch(()=>{});
+      }
+    },
+    выход(){
+      const в = document.getElementById('видео_титул');
+      в && в.pause();
+    } },
   { id:'зачем',
     /* шесть нажатий внутри такта: вызов → цель → путь → и три блока
        цепочки по одному. Докладчик ведёт зал сам, лента его не обгоняет */
@@ -841,6 +878,14 @@ addEventListener('keydown', е=>{
   if(е.key==='End'){ е.preventDefault(); показать(ТАКТЫ.length-1, true); }
   if(е.key==='Home'){ е.preventDefault(); показать(0); }
 });
+
+/* Петля титула проявляется по событию playing: на первом такте вход() не
+   вызывается (титул активен из разметки), а видео стартует по autoplay */
+const видеоТитул = document.getElementById('видео_титул');
+if(видеоТитул){
+  видеоТитул.addEventListener('playing', ()=>видеоТитул.classList.add('играет'));
+  видеоТитул.play().catch(()=>{});   // если автозапуск запрещён — останется кадр
+}
 
 /* курсор прячется при бездействии — не висит поверх ленты на проекторе */
 let таймерКурсора = null;
