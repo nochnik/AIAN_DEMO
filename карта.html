@@ -101,13 +101,29 @@ svg.карта.видна{opacity:1}
 .область.уровень3{fill:rgba(245,215,90,.6);stroke:rgba(250,232,160,.8)}
 .область.уровень4{fill:rgba(62,213,152,.5);stroke:rgba(140,240,195,.78)}
 .рельеф_подложка{opacity:.55}
-/* Подписи крупные и без обводки: тёмный ореол вокруг букв ложился пятнами
-   на заливку и мешал читать сами области (правка заказчика) */
-.метка_региона{fill:#F2F7FF;font-size:17px;font-weight:600;
-  pointer-events:none;letter-spacing:.01em}
-.метка_значение{fill:#FFFFFF;font-family:'Unbounded',system-ui,sans-serif;
-  font-size:26px;font-weight:700;pointer-events:none}
-.метка_региона.город{fill:rgba(226,236,250,.92);font-size:14px}
+/* Подписи — плашки тёмного стекла, как карточки в основной презентации:
+   название, крупное число, единица. Голый текст поверх заливки читался
+   плохо и не давал понять, что означает число (правка заказчика). */
+.обёртка{position:relative;display:inline-block;line-height:0}
+.слой_подписей{position:absolute;inset:0;pointer-events:none}
+.плашка{position:absolute;transform:translate(-50%,-50%);
+  display:flex;align-items:center;gap:.7vmin;white-space:nowrap;
+  padding:.55vmin 1vmin .55vmin .8vmin;border-radius:9px;
+  background:linear-gradient(165deg,rgba(12,24,40,.9),rgba(5,11,20,.86));
+  border:1px solid rgba(140,170,210,.22);border-top-color:rgba(215,226,242,.2);
+  box-shadow:0 6px 18px rgba(0,0,0,.5);line-height:1.15}
+.плашка .точка{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.плашка .имя{font-size:clamp(10px,1.25vmin,15px);font-weight:600;
+  color:rgba(226,236,250,.9);letter-spacing:.01em}
+.плашка .число{font-family:'Unbounded',system-ui,sans-serif;font-weight:700;
+  font-size:clamp(13px,1.75vmin,21px);color:#FFFFFF;
+  font-variant-numeric:tabular-nums}
+.плашка .единица{font-size:clamp(9px,1.1vmin,13px);color:var(--приглуш)}
+/* города-миллионники: отдельный вид плашки и выноска к самой точке */
+.плашка.город{padding-left:.9vmin;border-color:rgba(62,230,184,.4)}
+.плашка.город .имя{color:var(--мята)}
+.выноска{stroke:rgba(62,230,184,.55);stroke-width:1.4;stroke-dasharray:3 3;fill:none}
+.точка_города{fill:var(--мята);stroke:rgba(5,8,16,.9);stroke-width:2}
 
 /* ---------- легенда и подвал ---------- */
 #легенда{position:fixed;left:3vw;bottom:9vh;z-index:5;padding:1.6vmin 2vmin;
@@ -356,32 +372,50 @@ function построитьКарту(){
     s.appendChild(p);
   }
 
-  // подписи: имя области и значение показателя
-  /* города-миллионники — крошечные полигоны внутри областей: их подписи
-     сдвигаем, иначе они наезжают на название области */
-  const СДВИГ_ГОРОДОВ = { astana:[64,-36], almaty:[-64,40], shymkent:[-70,34] };
+  /* Подписи-плашки живут HTML-слоем поверх карты: так им доступны стекло,
+     шрифты и единицы измерения. Проценты берём от viewBox — слой совпадает
+     с картой при любом размере окна. */
+  const обёртка = document.createElement('div');
+  обёртка.className = 'обёртка';
+  const слой = document.createElement('div');
+  слой.className = 'слой_подписей';
+  /* Города-миллионники уводим от их областей, а тесные соседи получают
+     небольшие сдвиги: иначе плашки наезжают друг на друга */
+  const СДВИГ_ГОРОДОВ = { astana:[54,74], almaty:[-118,86], shymkent:[-104,52] };
+  const НУДЖИ = { pavlodar:[26,-52], akmola:[-54,-6], vko:[54,34],
+                  abai:[-34,4], turkestan:[-30,-30], karaganda:[10,26],
+                  kostanay:[-46,-18], zhambyl:[44,34] };
   for(const [ключ,о] of Object.entries(ОБЛАСТИ)){
     const кольцо = о.кольца[0];
     let сх=0, су=0;
     for(const [лон,лат] of кольцо){ const [x,y]=проецируй(лон,лат); сх+=x; су+=y; }
     сх/=кольцо.length; су/=кольцо.length;
     const сдвиг = СДВИГ_ГОРОДОВ[ключ];
+    const [цх,цу] = [сх, су];               // истинная точка региона
     if(сдвиг){ сх += сдвиг[0]; су += сдвиг[1]; }
-    const имя = свг('text');
-    имя.setAttribute('x',сх); имя.setAttribute('y',су-6);
-    if(сдвиг) имя.classList.add('город');
-    имя.setAttribute('text-anchor','middle');
-    имя.classList.add('метка_региона');
-    имя.textContent = коротко(о.имя);
-    s.appendChild(имя);
-    const знач = свг('text');
-    знач.setAttribute('x',сх); знач.setAttribute('y',су+12);
-    знач.setAttribute('text-anchor','middle');
-    знач.classList.add('метка_значение');
-    знач.dataset.ключ = ключ;
-    s.appendChild(знач);
+    else if(НУДЖИ[ключ]){ сх += НУДЖИ[ключ][0]; су += НУДЖИ[ключ][1]; }
+    if(сдвиг){
+      // выноска от плашки к самому городу — иначе непонятно, чей это ярлык
+      const л = свг('path');
+      л.setAttribute('d', `M${цх},${цу} L${сх},${су}`);
+      л.classList.add('выноска');
+      s.appendChild(л);
+      const т = свг('circle');
+      т.setAttribute('cx',цх); т.setAttribute('cy',цу); т.setAttribute('r',5);
+      т.classList.add('точка_города');
+      s.appendChild(т);
+    }
+    const пл = document.createElement('div');
+    пл.className = 'плашка' + (сдвиг ? ' город' : '');
+    пл.dataset.ключ = ключ;
+    пл.style.left = (сх/шир*100)+'%';
+    пл.style.top  = (су/выс*100)+'%';
+    пл.innerHTML = `<span class="точка"></span><span class="имя">${коротко(о.имя)}</span>` +
+                   `<span class="число">—</span><span class="единица"></span>`;
+    слой.appendChild(пл);
   }
-  document.getElementById('поле').appendChild(s);
+  обёртка.appendChild(s); обёртка.appendChild(слой);
+  document.getElementById('поле').appendChild(обёртка);
 }
 
 /* Города-точки и длинные названия сокращаем, иначе подписи налезают */
@@ -422,10 +456,17 @@ function перекрасить(){
     п.classList.remove('уровень1','уровень2','уровень3','уровень4');
     if(у) п.classList.add('уровень'+у);
   });
-  document.querySelectorAll('.метка_значение').forEach(т=>{
-    const з = значение(т.dataset.ключ);
-    т.textContent = з === null || з === undefined ? '—'
-      : (показатель === 'объём' ? з.toFixed(1) : з);
+  const ЦВЕТА = ['rgba(140,170,210,.4)','var(--красный)','var(--оранжевый)',
+                 'var(--жёлтый)','var(--зелёный)'];
+  document.querySelectorAll('.плашка').forEach(пл=>{
+    const з = значение(пл.dataset.ключ);
+    const у = уровень(з, пороги);
+    пл.querySelector('.точка').style.background = ЦВЕТА[у];
+    // число и единица рядом: иначе непонятно, сутки это или тонны
+    пл.querySelector('.число').textContent = з === null || з === undefined ? '—'
+      : (показатель === 'объём' ? з.toFixed(1).replace('.', ',') : з);
+    пл.querySelector('.единица').textContent =
+      з === null || з === undefined ? 'нет данных' : оп.единица;
   });
   обновитьЛегенду(пороги, оп);
 }
