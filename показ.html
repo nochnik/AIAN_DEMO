@@ -263,11 +263,9 @@ svg.карта{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)
   letter-spacing:.2em;opacity:0;transition:opacity 1s ease 3.4s;
   text-shadow:0 1px 8px rgba(0,0,0,.9)}
 .линии_пошли .астана_метка{opacity:.92}
-/* мост: генерированный пролёт от луча НПЗ к карте; последний кадр моста
-   совпадает с картой пиксель в пиксель, поэтому растворение невидимо */
-#видео_мост{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  opacity:1;transition:opacity .9s ease;z-index:3}
-.мост_прошёл #видео_мост{opacity:0;pointer-events:none}
+/* Пролёт к карте живёт внутри общего ролика цепочки, поэтому отдельного
+   видеослоя на такте карты больше нет. Класс .мост_прошёл оставлен: по нему
+   включаются линии данных и знак AIAN. */
 @keyframes вспышка{from{opacity:0;r:6}to{opacity:1}}
 #знак_аян{position:absolute;left:50%;top:13%;transform:translate(-50%,-50%) scale(.8);
   opacity:0;transition:all 1s ease;font-size:clamp(30px,6vmin,68px);font-weight:700;letter-spacing:.05em;
@@ -440,7 +438,6 @@ body.снимок #финал_знак{transition:none !important;opacity:1 !imp
    проверки headless-хромом, где виртуальное время не крутит CSS-анимации */
 body.снимок *{animation-play-state:paused !important}
 body.снимок .такт{transition:none !important} /* кроссфейд тактов мгновенно */
-body.снимок #видео_мост{transition:none !important} /* и мост скрыт мгновенно */
 body.снимок .линия_данных{animation:none !important;stroke-dashoffset:0 !important}
 body.снимок #астана_свет{animation:none !important;opacity:1 !important}
 body.снимок #знак_аян{opacity:1 !important;transform:translate(-50%,-50%) scale(1) !important}
@@ -464,7 +461,7 @@ body.снимок .бейдж.тревога{animation:none !important}
 
 /* режим ?пусто=1: карта без линий и знака — конечный кадр для генерации моста */
 body.пусто .линия_данных, body.пусто #астана_свет,
-body.пусто #знак_аян, body.пусто #подпись, body.пусто #видео_мост{display:none !important}
+body.пусто #знак_аян, body.пусто #подпись{display:none !important}
 
 /* дыхание на передаче эстафеты: сигнал «сейчас начнётся» */
 #живая_надпись{animation:живой_пульс 2.8s ease-in-out infinite}
@@ -566,17 +563,18 @@ body.снимок #финал .эффект, body.снимок #финал #ци
 
   <!-- ТАКТ 2: цепочка одним пролётом (вырезка Seedance 3.4–20.9 с) -->
   <section class="такт" id="цепочка">
-    <video id="видео_цепочка" src="медиа/цепочка.mp4" muted playsinline preload="auto"></video>
+    <!-- единый ролик заказчика: цепочка и пролёт к карте одним куском, отдельного моста больше нет -->
+    <video id="видео_цепочка" src="медиа/цепочка_карта.mp4" muted playsinline preload="auto"></video>
     <!-- метки описывают, что в кадре; чьи это системы — говорит модалка справа -->
-    <div class="метка_видео" data-от="1.2"  data-до="5.2"  style="left:56%;top:40%">скважины · данные онлайн</div>
-    <div class="метка_видео" data-от="6.0"  data-до="9.6"  style="left:40%;top:47%">вагоны в пути</div>
-    <div class="метка_видео" data-от="10.6" data-до="14.2" style="left:48%;top:32%">баланс производства НПЗ</div>
-    <div class="метка_видео" data-от="15.2" data-до="17.4" style="left:46%;top:26%">поток данных — в центр</div>
+    <div class="метка_видео" data-от="1.2"  data-до="4.4"  style="left:56%;top:40%">скважины · данные онлайн</div>
+    <div class="метка_видео" data-от="5.2"  data-до="8.4"  style="left:40%;top:47%">вагоны в пути</div>
+    <div class="метка_видео" data-от="9.4"  data-до="13.6" style="left:48%;top:32%">баланс производства НПЗ</div>
+    <div class="метка_видео" data-от="15.0" data-до="18.6" style="left:46%;top:26%">поток данных — в центр</div>
     <!-- та же цепочка, что на слайде: блок и его источники, МЭ первым -->
     <div id="этапы">
-      <div class="этап" data-от="0" data-до="5.4"><b>Добыча</b></div>
+      <div class="этап" data-от="0" data-до="4.6"><b>Добыча</b></div>
       <div class="стрелка_этап">→</div>
-      <div class="этап" data-от="5.4" data-до="14.6"><b>Транспортировка и переработка</b></div>
+      <div class="этап" data-от="4.6" data-до="14.6"><b>Транспортировка и переработка</b></div>
       <div class="стрелка_этап">→</div>
       <div class="этап" data-от="14.6" data-до="99"><b>Оборот НП</b></div>
     </div>
@@ -587,7 +585,6 @@ body.снимок #финал .эффект, body.снимок #финал #ци
        запада → регион зеленеет. Чат-бот и карточка с расшифровкой сняты:
        «он просто подумал и подсветил» -->
   <section class="такт такт_карта" id="карта_центр">
-    <video id="видео_мост" src="медиа/мост.mp4" muted playsinline preload="auto"></video>
     <div id="знак_аян" class="дисплей">KMG.<b class="град_текст">AIAN</b></div>
     <!-- AIAN живёт слева, за пределами карты, и работает как чат: думает,
          отвечает, предлагает решение, подводит итог (второе совещание) -->
@@ -638,7 +635,7 @@ body.снимок #финал .эффект, body.снимок #финал #ци
       <div class="мод_карта" data-от="1.0"><b>Добыча</b>
         <div class="мод_список"><span>МЭ</span><span>ЦД</span></div>
         <i>ЦД — цифровой двойник месторождения</i></div>
-      <div class="мод_карта" data-от="5.8"><b>Транспортировка и переработка</b>
+      <div class="мод_карта" data-от="5.2"><b>Транспортировка и переработка</b>
         <div class="мод_список"><span>МЭ</span><span>НПЗ</span><span>КТО</span></div></div>
       <div class="мод_карта" data-от="14.8"><b>Оборот НП</b>
         <div class="мод_список"><span>МЭ</span><span>КТЖ</span><span>КГД</span></div></div>
@@ -719,30 +716,19 @@ const ТАКТЫ = [
        2 — поставка с запада и отбой. Без чата и подписей: «он просто
        подумал и подсветил» (второе совещание) */
     подшагов: 2,
+    /* Пролёт к карте теперь внутри общего ролика, поэтому такт открывается
+       сразу картой: отдельного видео-моста и ожидания его конца нет */
     вход(){
       const с = document.getElementById('карта_центр');
-      const м = document.getElementById('видео_мост');
-      с.classList.remove('мост_прошёл','линии_пошли');
       this.таймеры = [];
-      let пущено = false;
-      const пуск = ()=>{
-        if(пущено) return; пущено = true;
-        с.classList.add('мост_прошёл','линии_пошли');
-        перенестиИсточники(); // карточки садятся к своим точкам сбора
-        // на подшагах подпись уже снята — не возвращаем её поверх реплики
-        if(подшаг === 0)
-          подпись('Аналитический центр КМГ — более 10 лет данных',
-                  'на этой основе работает искусственный интеллект', 2600);
-        this.таймеры.push(setTimeout(()=>document.getElementById('знак_аян').classList.add('показан'), 3400));
-      };
-      /* возврат на карту (шаг назад из «живой демонстрации») не должен
-         заново прокручивать мост — зал уже его видел */
-      if(подшаг > 0 || режимСнимка){ пуск(); }
-      else if(м && !м.error && м.getAttribute('src')){
-        м.currentTime = 0;
-        м.play().then(()=>{ м.onended = пуск; }).catch(пуск);
-        this.таймеры.push(setTimeout(пуск, 7000)); // страховка: мост завис
-      } else пуск();
+      с.classList.add('мост_прошёл','линии_пошли');
+      перенестиИсточники();            // карточки садятся к своим точкам сбора
+      // на подшагах подпись уже снята — не возвращаем её поверх реплики
+      if(подшаг === 0)
+        подпись('Аналитический центр КМГ — более 10 лет данных',
+                'на этой основе работает искусственный интеллект', 2200);
+      this.таймеры.push(setTimeout(
+        ()=>document.getElementById('знак_аян').classList.add('показан'), 2600));
     },
     подшаг(к){
       const с = document.getElementById('карта_центр');
@@ -784,8 +770,6 @@ const ТАКТЫ = [
       }
     },
     выход(){
-      const м = document.getElementById('видео_мост');
-      м && м.pause();
       (this.таймеры||[]).forEach(clearTimeout);
       (this.шаговые||[]).forEach(clearTimeout);
       const с = document.getElementById('карта_центр');
