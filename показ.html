@@ -440,6 +440,28 @@ body.снимок #финал_знак{transition:none !important;opacity:1 !imp
 #дорожка{font-size:clamp(12px,2.2vmin,26px);color:var(--приглуш);letter-spacing:.03em}
 #дорожка b{color:var(--текст);font-weight:600}
 
+/* ---------- откуда данные ---------- */
+#данные .центр{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.6vmin}
+#данные_заг{font-size:clamp(22px,4.2vmin,52px);font-weight:700;letter-spacing:.01em;opacity:0;transform:translateY(10px);transition:all .8s ease .2s}
+#данные.активен #данные_заг{opacity:1;transform:none}
+/* ширина плитки упирается и в ширину, и в высоту: две строки с подписями плюс заголовок должны влезть в кадр */
+#мозаика{display:grid;grid-template-columns:repeat(2,min(38vw,60vh));gap:1.6vmin}
+#мозаика figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid rgba(79,227,255,.3);
+  background:#0a1626;opacity:0;transform:translateY(24px);transition:all .8s ease}
+#мозаика video{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+#мозаика figcaption{padding:1.2vmin 2vmin;font-size:clamp(13px,2vmin,22px);display:flex;gap:1.4vmin;align-items:baseline;
+  background:rgba(7,14,26,.92);border-top:1px solid rgba(79,227,255,.25)}
+#мозаика figcaption b{color:var(--мята);font-weight:700;white-space:nowrap}
+#мозаика figcaption span{color:var(--приглуш)}
+#данные.активен #мозаика figure{opacity:1;transform:none}
+#данные.активен #мозаика figure:nth-child(1){transition-delay:.4s}
+#данные.активен #мозаика figure:nth-child(2){transition-delay:.6s}
+#данные.активен #мозаика figure:nth-child(3){transition-delay:.8s}
+#данные.активен #мозаика figure:nth-child(4){transition-delay:1s}
+#данные_под{font-size:clamp(13px,2.2vmin,26px);color:var(--приглуш);letter-spacing:.03em;opacity:0;transition:opacity .8s ease 1.3s}
+#данные.активен #данные_под{opacity:1}
+body.снимок #данные_заг,body.снимок #мозаика figure,body.снимок #данные_под{transition:none !important;opacity:1 !important;transform:none !important}
+
 /* режим ?снимок=1: все анимации в конечном состоянии — для покадровой
    проверки headless-хромом, где виртуальное время не крутит CSS-анимации */
 body.снимок *{animation-play-state:paused !important}
@@ -490,6 +512,17 @@ body.пусто #знак_аян, body.пусто #подпись{display:none !
 #финал.активен .эффект:nth-child(4){transition-delay:.85s}
 #финал #цифра{opacity:0;transform:translateY(10px);transition:all .8s ease .95s}
 #финал.активен #цифра{opacity:1;transform:none}
+#финал #цифра{transition-delay:1.15s}
+/* карточки выходят снизу вверх — по просьбе Адильжана 08.09 */
+#финал .эффект{transform:translateY(28px)}
+#живая_система{margin-top:1vmin;padding:1.4vmin 3.2vmin;border-radius:999px;font-size:clamp(14px,2.2vmin,24px);
+  color:var(--мята);border:1px solid rgba(62,230,184,.6);background:rgba(62,230,184,.1);text-decoration:none;
+  letter-spacing:.03em;opacity:0;transform:translateY(10px);transition:all .8s ease 1.6s}
+#финал.активен #живая_система{opacity:1;transform:none}
+#живая_система:hover{background:rgba(62,230,184,.22)}
+/* общее правило для ссылок подчёркивает и красит — у кнопки свой вид */
+#финал #живая_система{text-decoration:none;color:var(--мята);border:1px solid rgba(62,230,184,.6)}
+body.снимок #живая_система{transition:none !important;opacity:1 !important;transform:none !important}
 #финал #дорожка{opacity:0;transition:opacity .8s ease 1.7s}
 #финал.активен #дорожка{opacity:1}
 body.снимок #финал .эффект, body.снимок #финал #цифра, body.снимок #финал #дорожка{
@@ -643,6 +676,25 @@ body.снимок #финал .эффект, body.снимок #финал #ци
     </div>
   </section>
 
+  <!-- ТАКТ 5: откуда данные. ДАЦ 08.09 хотел показать «как AIAN думает внутри»
+       скринами дашбордов; таблицы с экрана нечитаемы, поэтому — мозаика четырёх
+       живых экранов с подписью, что это за источник, без чтения цифр.
+       Клипы ДАЦ (4K, 3–4 с) ужаты до 960×540 и зациклены. -->
+  <section class="такт" id="данные">
+    <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.35)"></div>
+    <div class="виньетка" style="background:radial-gradient(ellipse at center,rgba(0,0,0,.35) 0%,rgba(0,0,0,.8) 100%)"></div>
+    <div class="центр">
+      <div id="данные_заг" class="дисплей">AIAN считает на живых данных</div>
+      <div id="мозаика">
+        <figure><video src="медиа/данные/запасы.mp4" muted loop playsinline preload="auto"></video><figcaption><b>Запасы нефтепродуктов РК</b><span>остатки по стране и регионам</span></figcaption></figure>
+        <figure><video src="медиа/данные/кгд.mp4" muted loop playsinline preload="auto"></video><figcaption><b>КГД</b><span>реализация на АЗС — чеки и документы</span></figcaption></figure>
+        <figure><video src="медиа/данные/ктж.mp4" muted loop playsinline preload="auto"></video><figcaption><b>КТЖ</b><span>вагоны в пути — где груз сейчас</span></figcaption></figure>
+        <figure><video src="медиа/данные/рапорт.mp4" muted loop playsinline preload="auto"></video><figcaption><b>Рапорты нефтебаз</b><span>остатки и приёмка — без звонков</span></figcaption></figure>
+      </div>
+      <div id="данные_под">Интеграции, а не ручной ввод: заводы · КТЖ · КГД · нефтебазы · рынок</div>
+    </div>
+  </section>
+
   <!-- ТАКТ 6: финал после живой демонстрации -->
   <section class="такт" id="финал">
     <div style="position:absolute;inset:0;background:url('медиа/титул.jpg') center/cover;filter:brightness(.5)"></div>
@@ -664,9 +716,11 @@ body.снимок #финал .эффект, body.снимок #финал #ци
           <svg viewBox="0 0 24 24"><path d="M3 14.5C5 9.5 7 9.5 9 12.5C11 15.5 13 8.5 15 10.5C17 12.3 19 12 21 12"/></svg>
           <span>Снижение социального напряжения</span></div>
       </div>
-      <!-- Цифра эффекта (22,5 млрд тг) снята 08.09: председатель дважды просил
-           деньги не показывать, эффекты косвенные и ещё не подтверждены (ДАЦ).
-           Четыре эффекта — из текста для докладчика ДАЦ. -->
+      <!-- 08.09: цифру снимали (председатель просил без денег), Адильжан вернул —
+           деньги остаются. Четыре эффекта — из текста для докладчика ДАЦ,
+           выходят по одному снизу вверх. В конце — ссылка на живую систему. -->
+      <div id="цифра" class="дисплей"><span id="цифра_число" class="град_текст">22,5 млрд тг</span><span>ожидаемый эффект · 2026–2030</span></div>
+      <a id="живая_система" href="https://aian.kmg.kz/" target="_blank" rel="noopener">Открыть живую систему · aian.kmg.kz →</a>
       <!-- строка дорожной карты снята заказчиком: финал держится на
            эффектах и цифре, перечень интеграций отвлекал -->
 
@@ -827,12 +881,29 @@ const ТАКТЫ = [
       document.querySelectorAll('#аян_чат .чат_реплика').forEach(р=>р.classList.remove('видна'));
       сброситьСтопку(); // источники улетают вместе с картой
     } },
+  { id:'данные',
+    вход(){
+      подпись('', '');
+      document.querySelectorAll('#мозаика video').forEach(в=>{ в.currentTime = 0; в.play().catch(()=>{}); });
+    },
+    выход(){ document.querySelectorAll('#мозаика video').forEach(в=>в.pause()); } },
   { id:'финал',
     вход(){
       подпись('', '');
-      /* счётчик 22,5 млрд снят вместе с цифрой (08.09) */
+      /* счётчик 22,5: GSAP из вендора; без него остаётся статичная цифра */
+      const эл = document.getElementById('цифра_число');
+      try{
+        if(window.gsap && !режимСнимка){
+          const сч = {в: 0};
+          gsap.killTweensOf(сч);
+          // цифра выходит после четвёртой карточки
+          gsap.to(сч, {в: 22.5, duration: 1.5, delay: 1.15, ease: 'power2.out',
+            onUpdate(){ эл.textContent = сч.в.toFixed(1).replace('.', ',') + ' млрд тг'; },
+            onComplete(){ эл.textContent = '22,5 млрд тг'; }});
+        }
+      }catch(е){ эл.textContent = '22,5 млрд тг'; }
     },
-    выход(){} },
+    выход(){ document.getElementById('цифра_число').textContent = '22,5 млрд тг'; } },
 ];
 let номер = 0;
 /* ниточка прогресса: точка на такт */
