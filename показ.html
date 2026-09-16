@@ -1143,7 +1143,9 @@ addEventListener('keydown', е=>{
      он запускает звук. Escape оставлен как аварийный стоп на ручной обход. */
   if(АВТО && автоИдёт){
     if(е.key === 'Escape'){ автоТаймеры.forEach(clearTimeout); голосЭл.onended = null; голосЭл.pause(); автоИдёт = false; крупно(-1); }
-    е.preventDefault(); return;
+    /* глушим только клавиши листания; F11 и прочее — браузеру (Адиль: «f11 иногда нужен») */
+    if(['ArrowRight','ArrowLeft',' ','PageDown','PageUp','End','Home'].includes(е.key)) е.preventDefault();
+    return;
   }
   if(е.key==='ArrowRight'||е.key===' '||е.key==='PageDown'){ е.preventDefault(); вперёд(); }
   if(е.key==='ArrowLeft'||е.key==='PageUp'){ е.preventDefault(); назад(); }
